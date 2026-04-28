@@ -32,8 +32,8 @@ $suspectEvidence = $suspectEvidence ?? [];
                     <option>FEMALE</option>
                     <option>OTHER</option>
                 </select>
-                <input name="national_id" placeholder="National ID">
-                <input name="phone" placeholder="Phone">
+                <input name="national_id" placeholder="NID-ICI-0001" pattern="NID-ICI-[0-9]{4}" title="Use NID-ICI-0001 format" data-upper="true">
+                <input type="tel" name="phone" placeholder="+8801XXXXXXXXX" pattern="\+880[0-9]+" title="Use +880 followed by digits">
                 <input name="address_line" placeholder="Address">
                 <select name="suspect_status">
                     <option>PERSON_OF_INTEREST</option>

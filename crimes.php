@@ -115,9 +115,9 @@ $canDeleteCrime = $canDeleteCrime ?? false;
     <?php if ($canCreateCrime): ?>
         <section class="card">
             <h2>Create Crime Report</h2>
-            <form method="post">
+            <form method="post" data-validate-crime="true">
                 <input type="hidden" name="action" value="create_crime">
-                <input name="case_number" required placeholder="CASE-2026-0101">
+                <input name="case_number" required placeholder="CASE-2026-0001" pattern="CASE-[0-9]{4}-[0-9]{4}" title="Use CASE-YYYY-0001 format" data-upper="true">
                 <input name="crime_type" required placeholder="ROBBERY">
                 <input name="location_text" required placeholder="Location">
                 <input type="datetime-local" name="crime_datetime" required>

@@ -13,9 +13,9 @@ SET foreign_key_checks = 0;
 INSERT INTO officers (
     badge_number, first_name, last_name, email, phone, rank, password_hash, is_active
 ) VALUES
-    ('G1-0001', 'System', 'Admin', 'admin@icicids.local', '+234000000001', 'GRADE_1', '$2y$10$GADAA5S00HNXu.ZcuN.o7O0FM6xrmA4DdpxACgQAfVdXfGj33WxZe', 1),
-    ('G2-0001', 'Case', 'Manager', 'admin2@icicids.local', '+234000000002', 'GRADE_2', '$2y$10$RNlk5.319wzYrpqi8V45TuI/PX0sOdgQAUv6sAFZPETehiiqJX3wC', 1),
-    ('G3-0001', 'Data', 'Viewer', 'viewer3@icicids.local', '+234000000003', 'GRADE_3', '$2y$10$W2RNxsCr3snFswNTd44r0.kuPtFOnTEcwWriokzbTHFh2s1CCasTG', 1)
+    ('G1-0001', 'System', 'Admin', 'admin@icicids.local', '+880100000001', 'GRADE_1', '$2y$10$GADAA5S00HNXu.ZcuN.o7O0FM6xrmA4DdpxACgQAfVdXfGj33WxZe', 1),
+    ('G2-0001', 'Case', 'Manager', 'admin2@icicids.local', '+880100000002', 'GRADE_2', '$2y$10$RNlk5.319wzYrpqi8V45TuI/PX0sOdgQAUv6sAFZPETehiiqJX3wC', 1),
+    ('G3-0001', 'Data', 'Viewer', 'viewer3@icicids.local', '+880100000003', 'GRADE_3', '$2y$10$W2RNxsCr3snFswNTd44r0.kuPtFOnTEcwWriokzbTHFh2s1CCasTG', 1)
 ON DUPLICATE KEY UPDATE
     first_name = VALUES(first_name),
     last_name = VALUES(last_name),
@@ -149,7 +149,7 @@ INSERT INTO suspects (
     address_line, phone, reason_for_suspicion, suspect_status, created_by_officer_id
 )
 SELECT 'John', 'Doe', cr.id, '1990-05-15', 'MALE', 'NID-ICI-0001',
-       'Unknown', '08000000001', 'Witnesses place suspect at robbery scene.', 'WANTED', g2.id
+    'Unknown', '+880100000004', 'Witnesses place suspect at robbery scene.', 'WANTED', g2.id
 FROM crime_reports cr
 JOIN officers g2 ON g2.email = 'admin2@icicids.local'
 WHERE cr.case_number = 'CASE-2026-0001'
@@ -164,7 +164,7 @@ INSERT INTO suspects (
     address_line, phone, reason_for_suspicion, suspect_status, created_by_officer_id
 )
 SELECT 'Amaka', 'Nwosu', cr.id, '1988-11-22', 'FEMALE', 'NID-ICI-0002',
-       '15 Unity Street', '08000000002', 'Linked to cybercrime wallet infrastructure.', 'PERSON_OF_INTEREST', g2.id
+    '15 Unity Street', '+880100000005', 'Linked to cybercrime wallet infrastructure.', 'PERSON_OF_INTEREST', g2.id
 FROM crime_reports cr
 JOIN officers g2 ON g2.email = 'admin2@icicids.local'
 WHERE cr.case_number = 'CASE-2026-0002'
@@ -179,7 +179,7 @@ INSERT INTO suspects (
     address_line, phone, reason_for_suspicion, suspect_status, created_by_officer_id
 )
 SELECT 'Peter', 'Ibrahim', cr.id, '1995-03-04', 'MALE', 'NID-ICI-0003',
-       '7 Market Road', '08000000003', 'Present during assault and identified by CCTV.', 'ARRESTED', g2.id
+    '7 Market Road', '+880100000006', 'Present during assault and identified by CCTV.', 'ARRESTED', g2.id
 FROM crime_reports cr
 JOIN officers g2 ON g2.email = 'admin2@icicids.local'
 WHERE cr.case_number = 'CASE-2026-0003'
@@ -194,7 +194,7 @@ INSERT INTO suspects (
     address_line, phone, reason_for_suspicion, suspect_status, created_by_officer_id
 )
 SELECT 'Lillian', 'Okoro', cr.id, '1998-02-19', 'FEMALE', 'NID-ICI-0004',
-       '23 Bay View', '08000000004', 'Identified near kidnapping scene; vehicle matched witness report.', 'PERSON_OF_INTEREST', g2.id
+    '23 Bay View', '+880100000007', 'Identified near kidnapping scene; vehicle matched witness report.', 'PERSON_OF_INTEREST', g2.id
 FROM crime_reports cr
 JOIN officers g2 ON g2.email = 'admin2@icicids.local'
 WHERE cr.case_number = 'CASE-2026-0006'

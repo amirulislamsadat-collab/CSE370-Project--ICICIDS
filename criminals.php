@@ -15,7 +15,7 @@ $criminalCrimes = $criminalCrimes ?? [];
                 <input type="hidden" name="action" value="create_criminal">
                 <input type="number" name="suspect_id" required placeholder="Suspect ID">
                 <input type="number" name="crime_report_id" required placeholder="Closed crime report ID">
-                <input name="criminal_code" required placeholder="CRIM-0007">
+                <input name="criminal_code" required placeholder="09" pattern="[0-9]+" inputmode="numeric" title="Numbers only, e.g., 09">
                 <input name="profile_summary" required placeholder="Profile summary">
                 <select name="risk_level">
                     <option>LOW</option>
