@@ -1,3 +1,8 @@
+<?php
+$canSubmitSchema = $canSubmitSchema ?? false;
+$schemas = $schemas ?? [];
+?>
+
 <?php if ($canSubmitSchema): ?>
     <section class="card">
         <h2>Submit Schema Request</h2>
@@ -22,7 +27,7 @@
     <h2>Schema Requests</h2>
     <div class="table-wrap">
         <table>
-            <thead><tr><th>ID</th><th>Officer</th><th>Type</th><th>Object</th><th>Status</th><th>Reason</th></tr></thead>
+            <thead><tr><th>ID</th><th>Requested By</th><th>Type</th><th>Object</th><th>Requested Schema</th><th>Status</th><th>Reason</th></tr></thead>
             <tbody>
             <?php foreach ($schemas as $row): ?>
                 <tr>
@@ -30,6 +35,7 @@
                     <td><?= h((string)$row['first_name'] . ' ' . (string)$row['last_name']) ?></td>
                     <td><?= h((string)$row['request_type']) ?></td>
                     <td><?= h((string)$row['object_name']) ?></td>
+                    <td><?= h((string)$row['sql_proposal']) ?></td>
                     <td><?= h((string)$row['status']) ?></td>
                     <td><?= h((string)$row['reason']) ?></td>
                 </tr>

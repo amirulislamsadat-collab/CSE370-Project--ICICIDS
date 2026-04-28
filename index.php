@@ -14,7 +14,7 @@ $crimeManager = new CrimeAndSuspectManager($db, $auth, $audit);
 $evidenceManager = new EvidenceAndInvestigation($db, $auth, $audit);
 
 $view = isset($_GET['view']) ? (string)$_GET['view'] : 'dashboard';
-$validViews = ['dashboard', 'crimes', 'evidence', 'feedbacks', 'schema', 'logs'];
+$validViews = ['dashboard', 'crimes', 'suspects', 'criminals', 'evidence', 'feedbacks', 'schema', 'logs'];
 if (!in_array($view, $validViews, true)) {
     $view = 'dashboard';
 }
@@ -99,9 +99,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
+        if ($action === 'delete_crime') {
+            $crimeManager->deleteCrimeReport((int)($_POST['crime_report_id'] ?? 0));
+
+            flashSet('success', 'Crime report deleted.');
+            header('Location: index.php?view=crimes');
+            exit;
+        }
+
         if ($action === 'create_evidence') {
             $code = 'EVD-' . date('Ymd-His');
             $evidenceManager->createEvidence([
+                'crime_report_id' => (int)($_POST['crime_report_id'] ?? 0),
                 'evidence_code' => $code,
                 'evidence_type' => trim((string)($_POST['evidence_type'] ?? 'OTHER')),
                 'title' => trim((string)($_POST['title'] ?? '')),
@@ -111,6 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'storage_location' => trim((string)($_POST['storage_location'] ?? '')),
                 'chain_status' => trim((string)($_POST['chain_status'] ?? 'COLLECTED')),
                 'integrity_hash' => hash('sha256', $code . microtime(true)),
+                'relation_note' => trim((string)($_POST['relation_note'] ?? '')),
             ]);
 
             flashSet('success', 'Evidence added.');
@@ -126,6 +136,112 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             flashSet('success', 'Evidence status updated.');
             header('Location: index.php?view=evidence');
+            exit;
+        }
+
+        if ($action === 'delete_evidence') {
+            $evidenceManager->deleteEvidence((int)($_POST['evidence_id'] ?? 0));
+
+            flashSet('success', 'Evidence deleted.');
+            header('Location: index.php?view=evidence');
+            exit;
+        }
+
+        if ($action === 'link_evidence') {
+            $evidenceManager->linkEvidenceToCrime(
+                (int)($_POST['crime_report_id'] ?? 0),
+                (int)($_POST['evidence_id'] ?? 0),
+                trim((string)($_POST['relation_note'] ?? ''))
+            );
+
+            flashSet('success', 'Evidence linked to crime report.');
+            header('Location: index.php?view=evidence');
+            exit;
+        }
+
+        if ($action === 'create_suspect') {
+            $crimeManager->createSuspect([
+                'crime_report_id' => (int)($_POST['crime_report_id'] ?? 0),
+                'relation_type' => trim((string)($_POST['relation_type'] ?? 'PRIMARY')),
+                'relation_notes' => trim((string)($_POST['relation_notes'] ?? '')),
+                'first_name' => trim((string)($_POST['first_name'] ?? '')),
+                'last_name' => trim((string)($_POST['last_name'] ?? '')),
+                'date_of_birth' => trim((string)($_POST['date_of_birth'] ?? '')),
+                'gender' => trim((string)($_POST['gender'] ?? 'UNKNOWN')),
+                'national_id' => trim((string)($_POST['national_id'] ?? '')),
+                'address_line' => trim((string)($_POST['address_line'] ?? '')),
+                'phone' => trim((string)($_POST['phone'] ?? '')),
+                'reason_for_suspicion' => trim((string)($_POST['reason_for_suspicion'] ?? '')),
+                'suspect_status' => trim((string)($_POST['suspect_status'] ?? 'PERSON_OF_INTEREST')),
+            ]);
+
+            flashSet('success', 'Suspect created and linked to crime report.');
+            header('Location: index.php?view=suspects');
+            exit;
+        }
+
+        if ($action === 'delete_suspect') {
+            $crimeManager->deleteSuspect((int)($_POST['suspect_id'] ?? 0));
+
+            flashSet('success', 'Suspect deleted.');
+            header('Location: index.php?view=suspects');
+            exit;
+        }
+
+        if ($action === 'link_suspect') {
+            $crimeManager->linkSuspectToCrime(
+                (int)($_POST['crime_report_id'] ?? 0),
+                (int)($_POST['suspect_id'] ?? 0),
+                trim((string)($_POST['relation_type'] ?? 'PRIMARY')),
+                trim((string)($_POST['relation_notes'] ?? ''))
+            );
+
+            flashSet('success', 'Suspect linked to crime report.');
+            header('Location: index.php?view=suspects');
+            exit;
+        }
+
+        if ($action === 'create_criminal') {
+            $crimeManager->confirmCriminalForCrime([
+                'suspect_id' => (int)($_POST['suspect_id'] ?? 0),
+                'crime_report_id' => (int)($_POST['crime_report_id'] ?? 0),
+                'criminal_code' => trim((string)($_POST['criminal_code'] ?? '')),
+                'profile_summary' => trim((string)($_POST['profile_summary'] ?? '')),
+                'risk_level' => trim((string)($_POST['risk_level'] ?? 'MEDIUM')),
+                'current_status' => trim((string)($_POST['current_status'] ?? 'INCARCERATED')),
+                'offense_title' => trim((string)($_POST['offense_title'] ?? '')),
+                'conviction_date' => trim((string)($_POST['conviction_date'] ?? '')),
+                'sentence_details' => trim((string)($_POST['sentence_details'] ?? '')),
+                'jurisdiction' => trim((string)($_POST['jurisdiction'] ?? '')),
+                'notes' => trim((string)($_POST['notes'] ?? '')),
+            ]);
+
+            flashSet('success', 'Criminal confirmed and linked to closed case.');
+            header('Location: index.php?view=criminals');
+            exit;
+        }
+
+        if ($action === 'delete_criminal') {
+            $crimeManager->deleteCriminal((int)($_POST['criminal_id'] ?? 0));
+
+            flashSet('success', 'Criminal deleted.');
+            header('Location: index.php?view=criminals');
+            exit;
+        }
+
+        if ($action === 'link_criminal') {
+            $crimeManager->addCriminalHistory(
+                (int)($_POST['criminal_id'] ?? 0),
+                trim((string)($_POST['offense_title'] ?? '')),
+                (int)($_POST['crime_report_id'] ?? 0),
+                trim((string)($_POST['conviction_date'] ?? '')),
+                trim((string)($_POST['sentence_details'] ?? '')),
+                trim((string)($_POST['jurisdiction'] ?? '')),
+                trim((string)($_POST['notes'] ?? ''))
+            );
+
+            flashSet('success', 'Criminal linked to closed case.');
+            header('Location: index.php?view=criminals');
             exit;
         }
 
@@ -158,7 +274,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: index.php');
         exit;
     } catch (Throwable $e) {
-        flashSet('error', $e->getMessage());
+        $message = $e->getMessage();
+
+        if ($action === 'delete_crime' && $e instanceof PDOException) {
+            $sqlState = $e->getCode();
+            $driverCode = $e->errorInfo[1] ?? null;
+            if ($sqlState === '23000' || $driverCode === 1451) {
+                $message = 'Cannot delete this crime report because related data exists. Delete related suspects, evidence, criminal history, and links first, then try again.';
+            }
+        }
+
+        flashSet('error', $message);
         header('Location: index.php?view=' . urlencode($view));
         exit;
     }
@@ -169,6 +295,11 @@ $officer = $auth->currentOfficer();
 $rank = $officer['rank'] ?? '';
 $flash = flashGet();
 $pageTitle = 'ICICIDS';
+
+$selectedCrimeId = isset($_GET['crime_id']) ? max(0, (int)$_GET['crime_id']) : 0;
+$selectedEvidenceId = isset($_GET['evidence_id']) ? max(0, (int)$_GET['evidence_id']) : 0;
+$selectedSuspectId = isset($_GET['suspect_id']) ? max(0, (int)$_GET['suspect_id']) : 0;
+$selectedCriminalId = isset($_GET['criminal_id']) ? max(0, (int)$_GET['criminal_id']) : 0;
 
 function resolveImagePath(array $candidates): ?string
 {
@@ -183,20 +314,46 @@ function resolveImagePath(array $candidates): ?string
 }
 
 $canReadCrimes = false;
+$canReadSuspects = false;
+$canReadCriminals = false;
 $canReadEvidence = false;
 $canReadFeedbacks = false;
 $canReadSchema = false;
 $canReadLogs = false;
 $canCreateCrime = false;
 $canUpdateCrime = false;
+$canDeleteCrime = false;
+$canCreateSuspect = false;
+$canLinkSuspect = false;
+$canDeleteSuspect = false;
+$canCreateCriminal = false;
+$canLinkCriminal = false;
+$canDeleteCriminal = false;
 $canCreateEvidence = false;
 $canUpdateEvidence = false;
+$canDeleteEvidence = false;
+$canLinkEvidence = false;
 $canSubmitFeedback = false;
 $canSubmitSchema = false;
 
 $stats = ['officers' => 0, 'crime_reports' => 0, 'suspects' => 0, 'evidence' => 0, 'criminals' => 0];
 $crimeReports = [];
+$crimeDetail = null;
+$crimeSuspects = [];
+$crimeEvidence = [];
+$crimeCriminals = [];
+$crimeCriminalsBlocked = false;
+$suspects = [];
+$suspectDetail = null;
+$suspectCrimes = [];
+$suspectEvidence = [];
+$criminals = [];
+$criminalDetail = null;
+$criminalCrimes = [];
 $evidences = [];
+$evidenceDetail = null;
+$evidenceCrimes = [];
+$evidenceSuspects = [];
 $feedbacks = [];
 $schemas = [];
 $activityLogs = [];
@@ -204,6 +361,8 @@ $loginLogs = [];
 
 if ($isAuthed) {
     $canReadCrimes = $auth->can('READ', 'crime_reports');
+    $canReadSuspects = $auth->can('READ', 'suspects');
+    $canReadCriminals = $auth->can('READ', 'criminals');
     $canReadEvidence = $auth->can('READ', 'evidence');
     $canReadFeedbacks = $auth->can('READ', 'feedbacks');
     $canReadSchema = $auth->can('READ', 'schema_requests');
@@ -211,14 +370,25 @@ if ($isAuthed) {
 
     $canCreateCrime = $auth->can('CREATE', 'crime_reports');
     $canUpdateCrime = $auth->can('UPDATE', 'crime_reports');
+    $canDeleteCrime = $auth->can('DELETE', 'crime_reports');
+    $canCreateSuspect = $auth->can('CREATE', 'suspects');
+    $canLinkSuspect = $auth->can('CREATE', 'crime_report_suspects');
+    $canDeleteSuspect = $auth->can('DELETE', 'suspects');
+    $canCreateCriminal = $auth->can('CREATE', 'criminals');
+    $canLinkCriminal = $auth->can('CREATE', 'criminal_history');
+    $canDeleteCriminal = $auth->can('DELETE', 'criminals');
     $canCreateEvidence = $auth->can('CREATE', 'evidence');
     $canUpdateEvidence = $auth->can('UPDATE', 'evidence');
+    $canDeleteEvidence = $auth->can('DELETE', 'evidence');
+    $canLinkEvidence = $auth->can('CREATE', 'crime_report_evidence');
     $canSubmitFeedback = $auth->can('CREATE', 'feedbacks');
     $canSubmitSchema = $auth->can('CREATE', 'schema_requests');
 
     $viewAllowed = (
         ($view === 'dashboard')
         || ($view === 'crimes' && $canReadCrimes)
+        || ($view === 'suspects' && $canReadSuspects)
+        || ($view === 'criminals' && $canReadCriminals)
         || ($view === 'evidence' && $canReadEvidence)
         || ($view === 'feedbacks' && $canReadFeedbacks)
         || ($view === 'schema' && $canReadSchema)
@@ -238,9 +408,133 @@ if ($isAuthed) {
         $crimeReports = $crimeManager->listCrimeReports(null, null, 100);
     }
 
+    if ($view === 'crimes' && $canReadCrimes && $selectedCrimeId > 0) {
+        $crimeDetail = $crimeManager->getCrimeReportById($selectedCrimeId);
+
+        if ($crimeDetail !== null) {
+            $stmt = $db->prepare('SELECT s.id, s.first_name, s.last_name, s.suspect_status, crs.relation_type
+                                  FROM crime_report_suspects crs
+                                  JOIN suspects s ON s.id = crs.suspect_id
+                                  WHERE crs.crime_report_id = :crime_report_id
+                                  ORDER BY crs.id DESC');
+            $stmt->execute(['crime_report_id' => $selectedCrimeId]);
+            $crimeSuspects = $stmt->fetchAll();
+
+            $stmt = $db->prepare('SELECT e.id, e.evidence_code, e.title, e.evidence_type, e.chain_status
+                                  FROM crime_report_evidence cre
+                                  JOIN evidence e ON e.id = cre.evidence_id
+                                  WHERE cre.crime_report_id = :crime_report_id
+                                  ORDER BY cre.id DESC');
+            $stmt->execute(['crime_report_id' => $selectedCrimeId]);
+            $crimeEvidence = $stmt->fetchAll();
+
+            $status = strtoupper((string)($crimeDetail['investigation_status'] ?? ''));
+            if (in_array($status, ['CLOSED', 'REFERRED'], true)) {
+                $stmt = $db->prepare('SELECT c.id, c.criminal_code, c.risk_level, c.current_status,
+                                             s.first_name, s.last_name
+                                      FROM criminal_history ch
+                                      JOIN criminals c ON c.id = ch.criminal_id
+                                      LEFT JOIN suspects s ON s.id = c.suspect_id
+                                      WHERE ch.crime_report_id = :crime_report_id
+                                      ORDER BY ch.id DESC');
+                $stmt->execute(['crime_report_id' => $selectedCrimeId]);
+                $crimeCriminals = $stmt->fetchAll();
+            } else {
+                $crimeCriminalsBlocked = true;
+            }
+        }
+    }
+
+    if ($view === 'suspects' && $canReadSuspects) {
+        $stmt = $db->query('SELECT id, first_name, last_name, national_id, suspect_status, created_at
+                            FROM suspects
+                            ORDER BY id DESC LIMIT 100');
+        $suspects = $stmt->fetchAll();
+
+        if ($selectedSuspectId > 0) {
+            $stmt = $db->prepare('SELECT * FROM suspects WHERE id = :id');
+            $stmt->execute(['id' => $selectedSuspectId]);
+            $suspectDetail = $stmt->fetch() ?: null;
+
+            if ($suspectDetail !== null) {
+                $stmt = $db->prepare('SELECT cr.id, cr.case_number, cr.crime_type, cr.investigation_status, cr.crime_datetime
+                                      FROM crime_report_suspects crs
+                                      JOIN crime_reports cr ON cr.id = crs.crime_report_id
+                                      WHERE crs.suspect_id = :suspect_id
+                                      ORDER BY cr.crime_datetime DESC');
+                $stmt->execute(['suspect_id' => $selectedSuspectId]);
+                $suspectCrimes = $stmt->fetchAll();
+
+                $stmt = $db->prepare('SELECT e.id, e.evidence_code, e.title, e.evidence_type, e.chain_status
+                                      FROM suspect_evidence se
+                                      JOIN evidence e ON e.id = se.evidence_id
+                                      WHERE se.suspect_id = :suspect_id
+                                      ORDER BY e.id DESC');
+                $stmt->execute(['suspect_id' => $selectedSuspectId]);
+                $suspectEvidence = $stmt->fetchAll();
+            }
+        }
+    }
+
+    if ($view === 'criminals' && $canReadCriminals) {
+        $stmt = $db->query('SELECT c.id, c.criminal_code, c.risk_level, c.current_status, c.confirmed_at AS created_at,
+                                   s.first_name, s.last_name
+                            FROM criminals c
+                            LEFT JOIN suspects s ON s.id = c.suspect_id
+                            ORDER BY c.id DESC LIMIT 100');
+        $criminals = $stmt->fetchAll();
+
+        if ($selectedCriminalId > 0) {
+            $stmt = $db->prepare('SELECT c.*, s.id AS suspect_id, s.first_name, s.last_name, s.national_id
+                                  FROM criminals c
+                                  LEFT JOIN suspects s ON s.id = c.suspect_id
+                                  WHERE c.id = :id');
+            $stmt->execute(['id' => $selectedCriminalId]);
+            $criminalDetail = $stmt->fetch() ?: null;
+
+            if ($criminalDetail !== null) {
+                $stmt = $db->prepare('SELECT ch.id, ch.offense_title, ch.conviction_date, ch.jurisdiction, ch.notes,
+                                             cr.id AS crime_id, cr.case_number, cr.investigation_status
+                                      FROM criminal_history ch
+                                      LEFT JOIN crime_reports cr ON cr.id = ch.crime_report_id
+                                      WHERE ch.criminal_id = :criminal_id
+                                      ORDER BY ch.id DESC');
+                $stmt->execute(['criminal_id' => $selectedCriminalId]);
+                $criminalCrimes = $stmt->fetchAll();
+            }
+        }
+    }
+
     if ($view === 'evidence') {
         $stmt = $db->query('SELECT id, evidence_code, evidence_type, title, chain_status, created_at FROM evidence ORDER BY id DESC LIMIT 100');
         $evidences = $stmt->fetchAll();
+
+        if ($selectedEvidenceId > 0) {
+            $stmt = $db->prepare('SELECT e.*, o.first_name AS collected_by_first_name, o.last_name AS collected_by_last_name
+                                  FROM evidence e
+                                  LEFT JOIN officers o ON o.id = e.collected_by_officer_id
+                                  WHERE e.id = :id');
+            $stmt->execute(['id' => $selectedEvidenceId]);
+            $evidenceDetail = $stmt->fetch() ?: null;
+
+            if ($evidenceDetail !== null) {
+                $stmt = $db->prepare('SELECT cr.id, cr.case_number, cr.crime_type, cr.investigation_status, cr.crime_datetime
+                                      FROM crime_report_evidence cre
+                                      JOIN crime_reports cr ON cr.id = cre.crime_report_id
+                                      WHERE cre.evidence_id = :evidence_id
+                                      ORDER BY cr.crime_datetime DESC');
+                $stmt->execute(['evidence_id' => $selectedEvidenceId]);
+                $evidenceCrimes = $stmt->fetchAll();
+
+                $stmt = $db->prepare('SELECT s.id, s.first_name, s.last_name, s.suspect_status
+                                      FROM suspect_evidence se
+                                      JOIN suspects s ON s.id = se.suspect_id
+                                      WHERE se.evidence_id = :evidence_id
+                                      ORDER BY s.last_name, s.first_name');
+                $stmt->execute(['evidence_id' => $selectedEvidenceId]);
+                $evidenceSuspects = $stmt->fetchAll();
+            }
+        }
     }
 
     if ($view === 'feedbacks') {
@@ -253,7 +547,7 @@ if ($isAuthed) {
     }
 
     if ($view === 'schema') {
-        $stmt = $db->query('SELECT sr.id, sr.request_type, sr.object_name, sr.reason, sr.status, sr.created_at,
+        $stmt = $db->query('SELECT sr.id, sr.request_type, sr.object_name, sr.reason, sr.sql_proposal, sr.status, sr.created_at,
                                    o.first_name, o.last_name
                             FROM schema_requests sr
                             JOIN officers o ON o.id = sr.requested_by_officer_id
@@ -290,6 +584,10 @@ if (!$isAuthed) {
         require __DIR__ . '/views/pages/dashboard.php';
     } elseif ($view === 'crimes' && $canReadCrimes) {
         require __DIR__ . '/views/pages/crimes.php';
+    } elseif ($view === 'suspects' && $canReadSuspects) {
+        require __DIR__ . '/views/pages/suspects.php';
+    } elseif ($view === 'criminals' && $canReadCriminals) {
+        require __DIR__ . '/views/pages/criminals.php';
     } elseif ($view === 'evidence' && $canReadEvidence) {
         require __DIR__ . '/views/pages/evidence.php';
     } elseif ($view === 'feedbacks' && $canReadFeedbacks) {

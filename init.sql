@@ -84,6 +84,7 @@ CREATE TABLE suspects (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
+    crime_report_id BIGINT UNSIGNED NOT NULL,
     date_of_birth DATE NULL,
     gender ENUM('MALE', 'FEMALE', 'OTHER', 'UNKNOWN') NOT NULL DEFAULT 'UNKNOWN',
     national_id VARCHAR(80) NULL,
@@ -95,11 +96,15 @@ CREATE TABLE suspects (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT uq_suspects_national_id UNIQUE (national_id),
+    CONSTRAINT fk_suspects_primary_crime
+        FOREIGN KEY (crime_report_id) REFERENCES crime_reports(id)
+        ON UPDATE CASCADE ON DELETE RESTRICT,
     CONSTRAINT fk_suspects_created_by
         FOREIGN KEY (created_by_officer_id) REFERENCES officers(id)
         ON UPDATE CASCADE ON DELETE RESTRICT,
     INDEX idx_suspects_name (last_name, first_name),
     INDEX idx_suspects_status (suspect_status),
+    INDEX idx_suspects_crime_report (crime_report_id),
     INDEX idx_suspects_created_by (created_by_officer_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -128,6 +133,7 @@ CREATE TABLE crime_report_suspects (
 CREATE TABLE criminals (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     suspect_id BIGINT UNSIGNED NULL,
+    crime_report_id BIGINT UNSIGNED NOT NULL,
     criminal_code VARCHAR(40) NOT NULL UNIQUE,
     profile_summary TEXT NOT NULL,
     risk_level ENUM('LOW', 'MEDIUM', 'HIGH', 'CRITICAL') NOT NULL DEFAULT 'MEDIUM',
@@ -139,11 +145,15 @@ CREATE TABLE criminals (
     CONSTRAINT fk_criminals_suspect
         FOREIGN KEY (suspect_id) REFERENCES suspects(id)
         ON UPDATE CASCADE ON DELETE SET NULL,
+    CONSTRAINT fk_criminals_primary_crime
+        FOREIGN KEY (crime_report_id) REFERENCES crime_reports(id)
+        ON UPDATE CASCADE ON DELETE RESTRICT,
     CONSTRAINT fk_criminals_added_by
         FOREIGN KEY (added_by_officer_id) REFERENCES officers(id)
         ON UPDATE CASCADE ON DELETE RESTRICT,
     INDEX idx_criminals_status (current_status),
     INDEX idx_criminals_risk (risk_level),
+    INDEX idx_criminals_crime_report (crime_report_id),
     INDEX idx_criminals_added_by (added_by_officer_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -189,6 +199,7 @@ CREATE TABLE criminal_history (
 CREATE TABLE evidence (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     evidence_code VARCHAR(50) NOT NULL UNIQUE,
+    crime_report_id BIGINT UNSIGNED NOT NULL,
     evidence_type ENUM('FINGERPRINT', 'DOCUMENT', 'DIGITAL_FILE', 'WEAPON', 'BIOLOGICAL', 'VIDEO', 'AUDIO', 'OTHER') NOT NULL,
     title VARCHAR(150) NOT NULL,
     description TEXT NULL,
@@ -200,11 +211,15 @@ CREATE TABLE evidence (
     integrity_hash CHAR(64) NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_evidence_primary_crime
+        FOREIGN KEY (crime_report_id) REFERENCES crime_reports(id)
+        ON UPDATE CASCADE ON DELETE RESTRICT,
     CONSTRAINT fk_evidence_collected_by
         FOREIGN KEY (collected_by_officer_id) REFERENCES officers(id)
         ON UPDATE CASCADE ON DELETE SET NULL,
     INDEX idx_evidence_type (evidence_type),
     INDEX idx_evidence_chain_status (chain_status),
+    INDEX idx_evidence_crime_report (crime_report_id),
     INDEX idx_evidence_collected_by (collected_by_officer_id),
     INDEX idx_evidence_collected_at (collected_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

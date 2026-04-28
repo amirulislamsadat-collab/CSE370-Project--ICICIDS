@@ -70,39 +70,136 @@ ON DUPLICATE KEY UPDATE
     assigned_officer_id = VALUES(assigned_officer_id),
     description = VALUES(description);
 
+INSERT INTO crime_reports (
+    case_number, crime_type, location_text, latitude, longitude,
+    crime_datetime, description, investigation_status, reported_by_officer_id, assigned_officer_id
+)
+SELECT 'CASE-2026-0004', 'THEFT', 'Old Market Lane', 6.50010000, 3.42090000,
+       '2026-04-14 08:30:00', 'Reported pickpocketing incident with no suspect identified.', 'OPEN',
+       g1.id, g2.id
+FROM officers g1
+JOIN officers g2 ON g2.email = 'admin2@icicids.local'
+WHERE g1.email = 'admin@icicids.local'
+ON DUPLICATE KEY UPDATE
+    investigation_status = VALUES(investigation_status),
+    assigned_officer_id = VALUES(assigned_officer_id),
+    description = VALUES(description);
+
+INSERT INTO crime_reports (
+    case_number, crime_type, location_text, latitude, longitude,
+    crime_datetime, description, investigation_status, reported_by_officer_id, assigned_officer_id
+)
+SELECT 'CASE-2026-0005', 'BURGLARY', 'Harbor View Estate', 6.47120000, 3.51230000,
+       '2026-04-12 02:10:00', 'Forced entry reported; evidence recovered on site.', 'OPEN',
+       g1.id, g2.id
+FROM officers g1
+JOIN officers g2 ON g2.email = 'admin2@icicids.local'
+WHERE g1.email = 'admin@icicids.local'
+ON DUPLICATE KEY UPDATE
+    investigation_status = VALUES(investigation_status),
+    assigned_officer_id = VALUES(assigned_officer_id),
+    description = VALUES(description);
+
+INSERT INTO crime_reports (
+    case_number, crime_type, location_text, latitude, longitude,
+    crime_datetime, description, investigation_status, reported_by_officer_id, assigned_officer_id
+)
+SELECT 'CASE-2026-0006', 'KIDNAPPING', 'East Ring Road', 6.45510000, 3.45170000,
+       '2026-04-10 21:05:00', 'Suspect identified; investigation ongoing.', 'UNDER_INVESTIGATION',
+       g1.id, g2.id
+FROM officers g1
+JOIN officers g2 ON g2.email = 'admin2@icicids.local'
+WHERE g1.email = 'admin@icicids.local'
+ON DUPLICATE KEY UPDATE
+    investigation_status = VALUES(investigation_status),
+    assigned_officer_id = VALUES(assigned_officer_id),
+    description = VALUES(description);
+
+INSERT INTO crime_reports (
+    case_number, crime_type, location_text, latitude, longitude,
+    crime_datetime, description, investigation_status, reported_by_officer_id, assigned_officer_id
+)
+SELECT 'CASE-2025-1001', 'ROBBERY', 'Lagos Island Precinct', 6.45600000, 3.40300000,
+       '2025-11-08 18:20:00', 'Closed robbery case with confirmed conviction.', 'CLOSED',
+       g1.id, g1.id
+FROM officers g1
+WHERE g1.email = 'admin@icicids.local'
+ON DUPLICATE KEY UPDATE
+    investigation_status = VALUES(investigation_status),
+    assigned_officer_id = VALUES(assigned_officer_id),
+    description = VALUES(description);
+
+INSERT INTO crime_reports (
+    case_number, crime_type, location_text, latitude, longitude,
+    crime_datetime, description, investigation_status, reported_by_officer_id, assigned_officer_id
+)
+SELECT 'CASE-2025-1002', 'CYBERCRIME', 'Federal High Court Annex', 6.46660000, 3.37220000,
+       '2025-09-15 14:40:00', 'Closed cybercrime case referred for sentencing.', 'REFERRED',
+       g1.id, g1.id
+FROM officers g1
+WHERE g1.email = 'admin@icicids.local'
+ON DUPLICATE KEY UPDATE
+    investigation_status = VALUES(investigation_status),
+    assigned_officer_id = VALUES(assigned_officer_id),
+    description = VALUES(description);
+
 -- Suspects
 INSERT INTO suspects (
-    first_name, last_name, date_of_birth, gender, national_id,
+    first_name, last_name, crime_report_id, date_of_birth, gender, national_id,
     address_line, phone, reason_for_suspicion, suspect_status, created_by_officer_id
 )
-SELECT 'John', 'Doe', '1990-05-15', 'MALE', 'NID-ICI-0001',
+SELECT 'John', 'Doe', cr.id, '1990-05-15', 'MALE', 'NID-ICI-0001',
        'Unknown', '08000000001', 'Witnesses place suspect at robbery scene.', 'WANTED', g2.id
-FROM officers g2 WHERE g2.email = 'admin2@icicids.local'
+FROM crime_reports cr
+JOIN officers g2 ON g2.email = 'admin2@icicids.local'
+WHERE cr.case_number = 'CASE-2026-0001'
 ON DUPLICATE KEY UPDATE
+    crime_report_id = VALUES(crime_report_id),
     reason_for_suspicion = VALUES(reason_for_suspicion),
     suspect_status = VALUES(suspect_status),
     created_by_officer_id = VALUES(created_by_officer_id);
 
 INSERT INTO suspects (
-    first_name, last_name, date_of_birth, gender, national_id,
+    first_name, last_name, crime_report_id, date_of_birth, gender, national_id,
     address_line, phone, reason_for_suspicion, suspect_status, created_by_officer_id
 )
-SELECT 'Amaka', 'Nwosu', '1988-11-22', 'FEMALE', 'NID-ICI-0002',
+SELECT 'Amaka', 'Nwosu', cr.id, '1988-11-22', 'FEMALE', 'NID-ICI-0002',
        '15 Unity Street', '08000000002', 'Linked to cybercrime wallet infrastructure.', 'PERSON_OF_INTEREST', g2.id
-FROM officers g2 WHERE g2.email = 'admin2@icicids.local'
+FROM crime_reports cr
+JOIN officers g2 ON g2.email = 'admin2@icicids.local'
+WHERE cr.case_number = 'CASE-2026-0002'
 ON DUPLICATE KEY UPDATE
+    crime_report_id = VALUES(crime_report_id),
     reason_for_suspicion = VALUES(reason_for_suspicion),
     suspect_status = VALUES(suspect_status),
     created_by_officer_id = VALUES(created_by_officer_id);
 
 INSERT INTO suspects (
-    first_name, last_name, date_of_birth, gender, national_id,
+    first_name, last_name, crime_report_id, date_of_birth, gender, national_id,
     address_line, phone, reason_for_suspicion, suspect_status, created_by_officer_id
 )
-SELECT 'Peter', 'Ibrahim', '1995-03-04', 'MALE', 'NID-ICI-0003',
+SELECT 'Peter', 'Ibrahim', cr.id, '1995-03-04', 'MALE', 'NID-ICI-0003',
        '7 Market Road', '08000000003', 'Present during assault and identified by CCTV.', 'ARRESTED', g2.id
-FROM officers g2 WHERE g2.email = 'admin2@icicids.local'
+FROM crime_reports cr
+JOIN officers g2 ON g2.email = 'admin2@icicids.local'
+WHERE cr.case_number = 'CASE-2026-0003'
 ON DUPLICATE KEY UPDATE
+    crime_report_id = VALUES(crime_report_id),
+    reason_for_suspicion = VALUES(reason_for_suspicion),
+    suspect_status = VALUES(suspect_status),
+    created_by_officer_id = VALUES(created_by_officer_id);
+
+INSERT INTO suspects (
+    first_name, last_name, crime_report_id, date_of_birth, gender, national_id,
+    address_line, phone, reason_for_suspicion, suspect_status, created_by_officer_id
+)
+SELECT 'Lillian', 'Okoro', cr.id, '1998-02-19', 'FEMALE', 'NID-ICI-0004',
+       '23 Bay View', '08000000004', 'Identified near kidnapping scene; vehicle matched witness report.', 'PERSON_OF_INTEREST', g2.id
+FROM crime_reports cr
+JOIN officers g2 ON g2.email = 'admin2@icicids.local'
+WHERE cr.case_number = 'CASE-2026-0006'
+ON DUPLICATE KEY UPDATE
+    crime_report_id = VALUES(crime_report_id),
     reason_for_suspicion = VALUES(reason_for_suspicion),
     suspect_status = VALUES(suspect_status),
     created_by_officer_id = VALUES(created_by_officer_id);
@@ -141,24 +238,52 @@ ON DUPLICATE KEY UPDATE
     notes = VALUES(notes),
     linked_by_officer_id = VALUES(linked_by_officer_id);
 
+INSERT INTO crime_report_suspects (crime_report_id, suspect_id, relation_type, notes, linked_by_officer_id)
+SELECT cr.id, s.id, 'PRIMARY', 'Kidnapping case suspect; investigation ongoing.', g2.id
+FROM crime_reports cr
+JOIN suspects s ON s.national_id = 'NID-ICI-0004'
+JOIN officers g2 ON g2.email = 'admin2@icicids.local'
+WHERE cr.case_number = 'CASE-2026-0006'
+ON DUPLICATE KEY UPDATE
+    relation_type = VALUES(relation_type),
+    notes = VALUES(notes),
+    linked_by_officer_id = VALUES(linked_by_officer_id);
+
 -- Criminals (confirmed)
-INSERT INTO criminals (suspect_id, criminal_code, profile_summary, risk_level, current_status, added_by_officer_id)
-SELECT s.id, 'CRIM-0001', 'Repeat violent offender tied to armed robbery ring.', 'HIGH', 'AT_LARGE', g1.id
+INSERT INTO criminals (suspect_id, crime_report_id, criminal_code, profile_summary, risk_level, current_status, added_by_officer_id)
+SELECT s.id, cr.id, 'CRIM-0001', 'Repeat violent offender tied to armed robbery ring.', 'HIGH', 'AT_LARGE', g1.id
 FROM suspects s
+JOIN crime_reports cr ON cr.case_number = 'CASE-2025-1001'
 JOIN officers g1 ON g1.email = 'admin@icicids.local'
 WHERE s.national_id = 'NID-ICI-0001'
 ON DUPLICATE KEY UPDATE
+    crime_report_id = VALUES(crime_report_id),
     profile_summary = VALUES(profile_summary),
     risk_level = VALUES(risk_level),
     current_status = VALUES(current_status),
     added_by_officer_id = VALUES(added_by_officer_id);
 
-INSERT INTO criminals (suspect_id, criminal_code, profile_summary, risk_level, current_status, added_by_officer_id)
-SELECT s.id, 'CRIM-0002', 'Digital fraud operator with cross-border activity markers.', 'MEDIUM', 'INCARCERATED', g1.id
+INSERT INTO criminals (suspect_id, crime_report_id, criminal_code, profile_summary, risk_level, current_status, added_by_officer_id)
+SELECT s.id, cr.id, 'CRIM-0002', 'Digital fraud operator with cross-border activity markers.', 'MEDIUM', 'INCARCERATED', g1.id
 FROM suspects s
+JOIN crime_reports cr ON cr.case_number = 'CASE-2025-1002'
 JOIN officers g1 ON g1.email = 'admin@icicids.local'
 WHERE s.national_id = 'NID-ICI-0002'
 ON DUPLICATE KEY UPDATE
+    crime_report_id = VALUES(crime_report_id),
+    profile_summary = VALUES(profile_summary),
+    risk_level = VALUES(risk_level),
+    current_status = VALUES(current_status),
+    added_by_officer_id = VALUES(added_by_officer_id);
+
+INSERT INTO criminals (suspect_id, crime_report_id, criminal_code, profile_summary, risk_level, current_status, added_by_officer_id)
+SELECT s.id, cr.id, 'CRIM-0003', 'Assault conviction following Riverside Block C case closure.', 'LOW', 'PAROLE', g1.id
+FROM suspects s
+JOIN crime_reports cr ON cr.case_number = 'CASE-2026-0003'
+JOIN officers g1 ON g1.email = 'admin@icicids.local'
+WHERE s.national_id = 'NID-ICI-0003'
+ON DUPLICATE KEY UPDATE
+    crime_report_id = VALUES(crime_report_id),
     profile_summary = VALUES(profile_summary),
     risk_level = VALUES(risk_level),
     current_status = VALUES(current_status),
@@ -185,7 +310,7 @@ INSERT INTO criminal_history (
 SELECT c.id, cr.id, 'Armed Robbery', '2025-12-12',
        'Pending sentencing hearing.', 'Lagos State', 'Case reopened due to new witness account.', g1.id
 FROM criminals c
-JOIN crime_reports cr ON cr.case_number = 'CASE-2026-0001'
+JOIN crime_reports cr ON cr.case_number = 'CASE-2025-1001'
 JOIN officers g1 ON g1.email = 'admin@icicids.local'
 WHERE c.criminal_code = 'CRIM-0001';
 
@@ -196,43 +321,78 @@ INSERT INTO criminal_history (
 SELECT c.id, cr.id, 'Financial Cyber Fraud', '2026-01-30',
        '3-year sentence, cybercrime unit custody.', 'Federal High Court', 'Digital wallet tracing confirmed chain.', g1.id
 FROM criminals c
-JOIN crime_reports cr ON cr.case_number = 'CASE-2026-0002'
+JOIN crime_reports cr ON cr.case_number = 'CASE-2025-1002'
 JOIN officers g1 ON g1.email = 'admin@icicids.local'
 WHERE c.criminal_code = 'CRIM-0002';
 
+INSERT INTO criminal_history (
+    criminal_id, crime_report_id, offense_title, conviction_date,
+    sentence_details, jurisdiction, notes, created_by_officer_id
+)
+SELECT c.id, cr.id, 'Aggravated Assault', '2026-04-25',
+       '18-month sentence with parole conditions.', 'Lagos State', 'Case closed after plea agreement.', g1.id
+FROM criminals c
+JOIN crime_reports cr ON cr.case_number = 'CASE-2026-0003'
+JOIN officers g1 ON g1.email = 'admin@icicids.local'
+WHERE c.criminal_code = 'CRIM-0003';
+
 -- Evidence
 INSERT INTO evidence (
-    evidence_code, evidence_type, title, description, file_path,
+    evidence_code, crime_report_id, evidence_type, title, description, file_path,
     collected_at, collected_by_officer_id, storage_location, chain_status, integrity_hash
 )
-SELECT 'EVD-0001', 'DIGITAL_FILE', 'Store CCTV Archive', 'Raw CCTV footage around robbery window.', '/evidence/cctv/evd-0001.mp4',
+SELECT 'EVD-0001', cr.id, 'DIGITAL_FILE', 'Store CCTV Archive', 'Raw CCTV footage around robbery window.', '/evidence/cctv/evd-0001.mp4',
        '2026-04-20 20:10:00', g2.id, 'Digital Vault', 'IN_STORAGE', SHA2('EVD-0001', 256)
-FROM officers g2 WHERE g2.email = 'admin2@icicids.local'
+FROM crime_reports cr
+JOIN officers g2 ON g2.email = 'admin2@icicids.local'
+WHERE cr.case_number = 'CASE-2026-0001'
 ON DUPLICATE KEY UPDATE
+    crime_report_id = VALUES(crime_report_id),
     description = VALUES(description),
     chain_status = VALUES(chain_status),
     integrity_hash = VALUES(integrity_hash);
 
 INSERT INTO evidence (
-    evidence_code, evidence_type, title, description, file_path,
+    evidence_code, crime_report_id, evidence_type, title, description, file_path,
     collected_at, collected_by_officer_id, storage_location, chain_status, integrity_hash
 )
-SELECT 'EVD-0002', 'DOCUMENT', 'Transaction Ledger Printout', 'Printed ledger from seized office terminal.', '/evidence/docs/evd-0002.pdf',
+SELECT 'EVD-0002', cr.id, 'DOCUMENT', 'Transaction Ledger Printout', 'Printed ledger from seized office terminal.', '/evidence/docs/evd-0002.pdf',
        '2026-04-18 13:00:00', g2.id, 'Records Room B', 'IN_LAB', SHA2('EVD-0002', 256)
-FROM officers g2 WHERE g2.email = 'admin2@icicids.local'
+FROM crime_reports cr
+JOIN officers g2 ON g2.email = 'admin2@icicids.local'
+WHERE cr.case_number = 'CASE-2026-0002'
 ON DUPLICATE KEY UPDATE
+    crime_report_id = VALUES(crime_report_id),
     description = VALUES(description),
     chain_status = VALUES(chain_status),
     integrity_hash = VALUES(integrity_hash);
 
 INSERT INTO evidence (
-    evidence_code, evidence_type, title, description, file_path,
+    evidence_code, crime_report_id, evidence_type, title, description, file_path,
     collected_at, collected_by_officer_id, storage_location, chain_status, integrity_hash
 )
-SELECT 'EVD-0003', 'WEAPON', 'Recovered Knife', 'Knife recovered near assault location.', '/evidence/weapons/evd-0003.jpg',
+SELECT 'EVD-0003', cr.id, 'WEAPON', 'Recovered Knife', 'Knife recovered near assault location.', '/evidence/weapons/evd-0003.jpg',
        '2026-04-16 23:00:00', g2.id, 'Locker 12', 'IN_COURT', SHA2('EVD-0003', 256)
-FROM officers g2 WHERE g2.email = 'admin2@icicids.local'
+FROM crime_reports cr
+JOIN officers g2 ON g2.email = 'admin2@icicids.local'
+WHERE cr.case_number = 'CASE-2026-0003'
 ON DUPLICATE KEY UPDATE
+    crime_report_id = VALUES(crime_report_id),
+    description = VALUES(description),
+    chain_status = VALUES(chain_status),
+    integrity_hash = VALUES(integrity_hash);
+
+INSERT INTO evidence (
+    evidence_code, crime_report_id, evidence_type, title, description, file_path,
+    collected_at, collected_by_officer_id, storage_location, chain_status, integrity_hash
+)
+SELECT 'EVD-0004', cr.id, 'FINGERPRINT', 'Door Handle Prints', 'Latent prints lifted from burglary entry point.', '/evidence/prints/evd-0004.png',
+       '2026-04-12 02:40:00', g2.id, 'Lab Intake', 'IN_LAB', SHA2('EVD-0004', 256)
+FROM crime_reports cr
+JOIN officers g2 ON g2.email = 'admin2@icicids.local'
+WHERE cr.case_number = 'CASE-2026-0005'
+ON DUPLICATE KEY UPDATE
+    crime_report_id = VALUES(crime_report_id),
     description = VALUES(description),
     chain_status = VALUES(chain_status),
     integrity_hash = VALUES(integrity_hash);
@@ -264,6 +424,16 @@ FROM crime_reports cr
 JOIN evidence e ON e.evidence_code = 'EVD-0003'
 JOIN officers g2 ON g2.email = 'admin2@icicids.local'
 WHERE cr.case_number = 'CASE-2026-0003'
+ON DUPLICATE KEY UPDATE
+    relation_note = VALUES(relation_note),
+    linked_by_officer_id = VALUES(linked_by_officer_id);
+
+INSERT INTO crime_report_evidence (crime_report_id, evidence_id, linked_by_officer_id, relation_note)
+SELECT cr.id, e.id, g2.id, 'Prints lifted from entry point; suspect unknown.'
+FROM crime_reports cr
+JOIN evidence e ON e.evidence_code = 'EVD-0004'
+JOIN officers g2 ON g2.email = 'admin2@icicids.local'
+WHERE cr.case_number = 'CASE-2026-0005'
 ON DUPLICATE KEY UPDATE
     relation_note = VALUES(relation_note),
     linked_by_officer_id = VALUES(linked_by_officer_id);
@@ -363,6 +533,40 @@ SELECT g2.id, 'INDEX', 'crime_reports',
 FROM officers g1
 JOIN officers g2 ON g2.email = 'admin2@icicids.local'
 WHERE g1.email = 'admin@icicids.local';
+
+INSERT INTO schema_requests (
+        requested_by_officer_id, request_type, object_name, reason, sql_proposal,
+        status, reviewed_by_officer_id, review_notes, reviewed_at
+)
+SELECT g2.id, 'ALTER', 'evidence',
+             'Add a chain-of-custody status column for faster review.',
+             'ALTER TABLE evidence ADD COLUMN custody_review_note VARCHAR(255) NULL AFTER chain_status;',
+             'PENDING', NULL, NULL, NULL
+FROM officers g2
+WHERE g2.email = 'admin2@icicids.local'
+    AND NOT EXISTS (
+            SELECT 1 FROM schema_requests sr
+            WHERE sr.object_name = 'evidence'
+                AND sr.request_type = 'ALTER'
+                AND sr.reason = 'Add a chain-of-custody status column for faster review.'
+    );
+
+INSERT INTO schema_requests (
+        requested_by_officer_id, request_type, object_name, reason, sql_proposal,
+        status, reviewed_by_officer_id, review_notes, reviewed_at
+)
+SELECT g1.id, 'CREATE', 'audit_export_archive',
+             'Provide an archive table for exported audit snapshots.',
+             'CREATE TABLE audit_export_archive (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, export_name VARCHAR(150) NOT NULL, exported_by_officer_id BIGINT UNSIGNED NOT NULL, exported_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, notes TEXT NULL);',
+             'APPROVED', g1.id, 'Requested by Grade 1 for admin reporting.', NOW()
+FROM officers g1
+WHERE g1.email = 'admin@icicids.local'
+    AND NOT EXISTS (
+            SELECT 1 FROM schema_requests sr
+            WHERE sr.object_name = 'audit_export_archive'
+                AND sr.request_type = 'CREATE'
+                AND sr.reason = 'Provide an archive table for exported audit snapshots.'
+    );
 
 -- Feedbacks (Grade 2 and Grade 3)
 INSERT INTO feedbacks (submitted_by_officer_id, module_name, category, message, status, resolved_by_officer_id, resolved_at)

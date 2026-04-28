@@ -156,11 +156,41 @@ final class Auth
         }
 
         if ($rank === self::ROLE_GRADE_2) {
+            $createTables = [
+                'crime_reports',
+                'suspects',
+                'criminals',
+                'evidence',
+                'crime_report_suspects',
+                'crime_report_evidence',
+                'suspect_evidence',
+                'criminal_history',
+                'criminal_aliases',
+            ];
+            $deleteTables = [
+                'crime_reports',
+                'suspects',
+                'criminals',
+                'evidence',
+                'crime_report_suspects',
+                'crime_report_evidence',
+                'suspect_evidence',
+                'criminal_history',
+                'criminal_aliases',
+            ];
+
             if ($normalizedOperation === 'READ' || $normalizedOperation === 'UPDATE') {
                 return;
             }
 
-            if ($normalizedOperation === 'CREATE' && in_array($normalizedTable, ['schema_requests', 'feedbacks'], true)) {
+            if (
+                $normalizedOperation === 'CREATE'
+                && in_array($normalizedTable, array_merge($createTables, ['schema_requests', 'feedbacks']), true)
+            ) {
+                return;
+            }
+
+            if ($normalizedOperation === 'DELETE' && in_array($normalizedTable, $deleteTables, true)) {
                 return;
             }
 
@@ -168,6 +198,18 @@ final class Auth
         }
 
         if ($rank === self::ROLE_GRADE_3) {
+            $createTables = [
+                'crime_reports',
+                'suspects',
+                'criminals',
+                'evidence',
+                'crime_report_suspects',
+                'crime_report_evidence',
+                'suspect_evidence',
+                'criminal_history',
+                'criminal_aliases',
+            ];
+
             if ($normalizedTable === 'schema_requests') {
                 throw new RuntimeException('Permission denied. Grade 3 cannot access schema requests.');
             }
@@ -176,7 +218,14 @@ final class Auth
                 return;
             }
 
-            if ($normalizedOperation === 'CREATE' && $normalizedTable === 'feedbacks') {
+            if ($normalizedOperation === 'DELETE') {
+                throw new RuntimeException('Permission denied. Grade 3 cannot delete records.');
+            }
+
+            if (
+                $normalizedOperation === 'CREATE'
+                && in_array($normalizedTable, array_merge($createTables, ['feedbacks']), true)
+            ) {
                 return;
             }
 

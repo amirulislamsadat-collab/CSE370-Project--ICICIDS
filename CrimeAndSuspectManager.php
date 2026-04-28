@@ -21,6 +21,27 @@ final class CrimeAndSuspectManager
     {
         $this->auth->enforce('CREATE', 'crime_reports');
 
+        $caseNumber = strtoupper(trim((string)($data['case_number'] ?? '')));
+        if ($caseNumber === '' || !preg_match('/^CASE-\d{4}-\d{4}$/', $caseNumber)) {
+            throw new RuntimeException('Invalid case number. Use CASE-YYYY-0001 format.');
+        }
+
+        $crimeDatetime = trim((string)($data['crime_datetime'] ?? ''));
+        if ($crimeDatetime === '') {
+            throw new RuntimeException('Crime date/time is required.');
+        }
+
+        try {
+            $crimeDate = new DateTime($crimeDatetime);
+        } catch (Throwable $e) {
+            throw new RuntimeException('Invalid crime date/time format.');
+        }
+
+        $caseYear = (int)substr($caseNumber, 5, 4);
+        if ((int)$crimeDate->format('Y') !== $caseYear) {
+            throw new RuntimeException('Case year must match crime date year.');
+        }
+
         $officer = $this->auth->currentOfficer();
         if ($officer === null) {
             throw new RuntimeException('No authenticated officer.');
@@ -37,7 +58,7 @@ final class CrimeAndSuspectManager
                 )';
 
         $stmt = $this->db->prepare($sql);
-        $stmt->bindValue(':case_number', $data['case_number']);
+        $stmt->bindValue(':case_number', $caseNumber);
         $stmt->bindValue(':crime_type', $data['crime_type']);
         $stmt->bindValue(':location_text', $data['location_text']);
         $stmt->bindValue(':latitude', $data['latitude'] ?? null);
@@ -142,38 +163,77 @@ final class CrimeAndSuspectManager
     {
         $this->auth->enforce('CREATE', 'suspects');
 
+        $crimeReportId = isset($data['crime_report_id']) ? (int)$data['crime_report_id'] : 0;
+        if ($crimeReportId <= 0) {
+            throw new RuntimeException('Suspects must be linked to a crime report.');
+        }
+
         $officer = $this->auth->currentOfficer();
         if ($officer === null) {
             throw new RuntimeException('No authenticated officer.');
         }
 
-        $sql = 'INSERT INTO suspects (
-                    first_name, last_name, date_of_birth, gender, national_id,
-                    address_line, phone, reason_for_suspicion, suspect_status, created_by_officer_id
-                ) VALUES (
-                    :first_name, :last_name, :date_of_birth, :gender, :national_id,
-                    :address_line, :phone, :reason_for_suspicion, :suspect_status, :created_by_officer_id
-                )';
+        $phone = trim((string)($data['phone'] ?? ''));
+        if ($phone !== '' && !preg_match('/^\+880\d+$/', $phone)) {
+            throw new RuntimeException('Invalid phone number. Use +880 followed by digits.');
+        }
+        $phone = $phone === '' ? null : $phone;
 
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([
-            'first_name' => $data['first_name'],
-            'last_name' => $data['last_name'],
-            'date_of_birth' => $data['date_of_birth'] ?? null,
-            'gender' => strtoupper(trim($data['gender'] ?? 'UNKNOWN')),
-            'national_id' => $data['national_id'] ?? null,
-            'address_line' => $data['address_line'] ?? null,
-            'phone' => $data['phone'] ?? null,
-            'reason_for_suspicion' => $data['reason_for_suspicion'],
-            'suspect_status' => strtoupper(trim($data['suspect_status'] ?? 'PERSON_OF_INTEREST')),
-            'created_by_officer_id' => (int)$officer['id'],
-        ]);
+        $nationalId = trim((string)($data['national_id'] ?? ''));
+        $nationalId = $nationalId === '' ? null : strtoupper($nationalId);
+        if ($nationalId !== null && !preg_match('/^NID-ICI-\d{4}$/', $nationalId)) {
+            throw new RuntimeException('Invalid NID. Use NID-ICI-XXXX format.');
+        }
 
-        $id = (int)$this->db->lastInsertId();
+        $checkStmt = $this->db->prepare('SELECT id FROM crime_reports WHERE id = :id');
+        $checkStmt->execute(['id' => $crimeReportId]);
+        if ($checkStmt->fetchColumn() === false) {
+            throw new RuntimeException('Crime report not found.');
+        }
 
-        $this->auditLogger->logActivity((int)$officer['id'], 'CREATE', 'suspects', $id, 'Suspect profile created');
+        $this->db->beginTransaction();
 
-        return $id;
+        try {
+            $sql = 'INSERT INTO suspects (
+                        first_name, last_name, crime_report_id, date_of_birth, gender, national_id,
+                        address_line, phone, reason_for_suspicion, suspect_status, created_by_officer_id
+                    ) VALUES (
+                        :first_name, :last_name, :crime_report_id, :date_of_birth, :gender, :national_id,
+                        :address_line, :phone, :reason_for_suspicion, :suspect_status, :created_by_officer_id
+                    )';
+
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                'first_name' => $data['first_name'],
+                'last_name' => $data['last_name'],
+                'crime_report_id' => $crimeReportId,
+                'date_of_birth' => $data['date_of_birth'] ?? null,
+                'gender' => strtoupper(trim($data['gender'] ?? 'UNKNOWN')),
+                'national_id' => $nationalId,
+                'address_line' => $data['address_line'] ?? null,
+                'phone' => $phone,
+                'reason_for_suspicion' => $data['reason_for_suspicion'],
+                'suspect_status' => strtoupper(trim($data['suspect_status'] ?? 'PERSON_OF_INTEREST')),
+                'created_by_officer_id' => (int)$officer['id'],
+            ]);
+
+            $id = (int)$this->db->lastInsertId();
+            $this->auditLogger->logActivity((int)$officer['id'], 'CREATE', 'suspects', $id, 'Suspect profile created');
+
+            $this->linkSuspectToCrime(
+                $crimeReportId,
+                $id,
+                $data['relation_type'] ?? 'PRIMARY',
+                $data['relation_notes'] ?? null
+            );
+
+            $this->db->commit();
+
+            return $id;
+        } catch (Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
     }
 
     public function updateSuspectStatus(int $suspectId, string $suspectStatus): void
@@ -226,7 +286,14 @@ final class CrimeAndSuspectManager
         return $id;
     }
 
-    public function createCriminalFromSuspect(int $suspectId, string $criminalCode, string $profileSummary, string $riskLevel, string $currentStatus): int
+    public function createCriminalFromSuspect(
+        int $suspectId,
+        int $crimeReportId,
+        string $criminalCode,
+        string $profileSummary,
+        string $riskLevel,
+        string $currentStatus
+    ): int
     {
         $this->auth->enforce('CREATE', 'criminals');
 
@@ -235,15 +302,45 @@ final class CrimeAndSuspectManager
             throw new RuntimeException('No authenticated officer.');
         }
 
+        if ($crimeReportId <= 0) {
+            throw new RuntimeException('Crime report is required for confirming a criminal.');
+        }
+
+        $criminalCode = strtoupper(trim($criminalCode));
+        if ($criminalCode === '') {
+            throw new RuntimeException('Criminal ID is required.');
+        }
+
+        if (preg_match('/^\d+$/', $criminalCode)) {
+            $criminalCode = 'CRIM-' . $criminalCode;
+        }
+
+        if (!preg_match('/^CRIM-\d+$/', $criminalCode)) {
+            throw new RuntimeException('Invalid criminal ID. Use digits only or CRIM-09 format.');
+        }
+
+        $statusStmt = $this->db->prepare('SELECT investigation_status FROM crime_reports WHERE id = :id');
+        $statusStmt->execute(['id' => $crimeReportId]);
+        $status = $statusStmt->fetchColumn();
+        if ($status === false) {
+            throw new RuntimeException('Crime report not found.');
+        }
+
+        $status = strtoupper((string)$status);
+        if (!in_array($status, ['CLOSED', 'REFERRED'], true)) {
+            throw new RuntimeException('Criminals can only be linked to closed or referred cases.');
+        }
+
         $sql = 'INSERT INTO criminals (
-                    suspect_id, criminal_code, profile_summary, risk_level, current_status, added_by_officer_id
+                    suspect_id, crime_report_id, criminal_code, profile_summary, risk_level, current_status, added_by_officer_id
                 ) VALUES (
-                    :suspect_id, :criminal_code, :profile_summary, :risk_level, :current_status, :added_by_officer_id
+                    :suspect_id, :crime_report_id, :criminal_code, :profile_summary, :risk_level, :current_status, :added_by_officer_id
                 )';
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
             'suspect_id' => $suspectId,
+            'crime_report_id' => $crimeReportId,
             'criminal_code' => $criminalCode,
             'profile_summary' => $profileSummary,
             'risk_level' => strtoupper(trim($riskLevel)),
@@ -300,6 +397,20 @@ final class CrimeAndSuspectManager
             throw new RuntimeException('No authenticated officer.');
         }
 
+        if ($crimeReportId !== null) {
+            $statusStmt = $this->db->prepare('SELECT investigation_status FROM crime_reports WHERE id = :id');
+            $statusStmt->execute(['id' => $crimeReportId]);
+            $status = $statusStmt->fetchColumn();
+            if ($status === false) {
+                throw new RuntimeException('Crime report not found.');
+            }
+
+            $status = strtoupper((string)$status);
+            if (!in_array($status, ['CLOSED', 'REFERRED'], true)) {
+                throw new RuntimeException('Criminals can only be linked to closed or referred cases.');
+            }
+        }
+
         $sql = 'INSERT INTO criminal_history (
                     criminal_id, crime_report_id, offense_title, conviction_date,
                     sentence_details, jurisdiction, notes, created_by_officer_id
@@ -325,6 +436,121 @@ final class CrimeAndSuspectManager
         $this->auditLogger->logActivity((int)$officer['id'], 'CREATE', 'criminal_history', $id, 'Added criminal history record');
 
         return $id;
+    }
+
+    public function confirmCriminalForCrime(array $data): int
+    {
+        $this->auth->enforce('CREATE', 'criminals');
+
+        $officer = $this->auth->currentOfficer();
+        if ($officer === null) {
+            throw new RuntimeException('No authenticated officer.');
+        }
+
+        $crimeReportId = isset($data['crime_report_id']) ? (int)$data['crime_report_id'] : 0;
+        if ($crimeReportId <= 0) {
+            throw new RuntimeException('Crime report is required for confirming a criminal.');
+        }
+
+        $suspectId = isset($data['suspect_id']) ? (int)$data['suspect_id'] : 0;
+        if ($suspectId <= 0) {
+            throw new RuntimeException('Suspect is required for confirming a criminal.');
+        }
+
+        $suspectStmt = $this->db->prepare('SELECT id FROM suspects WHERE id = :id');
+        $suspectStmt->execute(['id' => $suspectId]);
+        if ($suspectStmt->fetchColumn() === false) {
+            throw new RuntimeException('Suspect not found.');
+        }
+
+        $this->db->beginTransaction();
+
+        try {
+            $existingStmt = $this->db->prepare('SELECT id FROM criminals WHERE suspect_id = :suspect_id');
+            $existingStmt->execute(['suspect_id' => $suspectId]);
+            $criminalId = $existingStmt->fetchColumn();
+
+            if ($criminalId === false) {
+                $criminalId = $this->createCriminalFromSuspect(
+                    $suspectId,
+                    $crimeReportId,
+                    (string)$data['criminal_code'],
+                    (string)$data['profile_summary'],
+                    (string)$data['risk_level'],
+                    (string)$data['current_status']
+                );
+            } else {
+                $criminalId = (int)$criminalId;
+            }
+
+            $this->addCriminalHistory(
+                $criminalId,
+                (string)$data['offense_title'],
+                $crimeReportId,
+                $data['conviction_date'] ?? null,
+                $data['sentence_details'] ?? null,
+                $data['jurisdiction'] ?? null,
+                $data['notes'] ?? null
+            );
+
+            $this->db->commit();
+
+            return $criminalId;
+        } catch (Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+    }
+
+    public function deleteCrimeReport(int $crimeReportId): void
+    {
+        $this->auth->enforce('DELETE', 'crime_reports');
+
+        $stmt = $this->db->prepare('DELETE FROM crime_reports WHERE id = :id');
+        $stmt->execute(['id' => $crimeReportId]);
+
+        if ($stmt->rowCount() === 0) {
+            throw new RuntimeException('Crime report not found.');
+        }
+
+        $officer = $this->auth->currentOfficer();
+        if ($officer !== null) {
+            $this->auditLogger->logActivity((int)$officer['id'], 'DELETE', 'crime_reports', $crimeReportId, 'Crime report deleted');
+        }
+    }
+
+    public function deleteSuspect(int $suspectId): void
+    {
+        $this->auth->enforce('DELETE', 'suspects');
+
+        $stmt = $this->db->prepare('DELETE FROM suspects WHERE id = :id');
+        $stmt->execute(['id' => $suspectId]);
+
+        if ($stmt->rowCount() === 0) {
+            throw new RuntimeException('Suspect not found.');
+        }
+
+        $officer = $this->auth->currentOfficer();
+        if ($officer !== null) {
+            $this->auditLogger->logActivity((int)$officer['id'], 'DELETE', 'suspects', $suspectId, 'Suspect deleted');
+        }
+    }
+
+    public function deleteCriminal(int $criminalId): void
+    {
+        $this->auth->enforce('DELETE', 'criminals');
+
+        $stmt = $this->db->prepare('DELETE FROM criminals WHERE id = :id');
+        $stmt->execute(['id' => $criminalId]);
+
+        if ($stmt->rowCount() === 0) {
+            throw new RuntimeException('Criminal not found.');
+        }
+
+        $officer = $this->auth->currentOfficer();
+        if ($officer !== null) {
+            $this->auditLogger->logActivity((int)$officer['id'], 'DELETE', 'criminals', $criminalId, 'Criminal deleted');
+        }
     }
 
     public function getCriminalProfile(int $criminalId): ?array

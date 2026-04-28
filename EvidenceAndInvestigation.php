@@ -21,40 +21,62 @@ final class EvidenceAndInvestigation
     {
         $this->auth->enforce('CREATE', 'evidence');
 
+        $crimeReportId = isset($data['crime_report_id']) ? (int)$data['crime_report_id'] : 0;
+        if ($crimeReportId <= 0) {
+            throw new RuntimeException('Evidence must be linked to a crime report.');
+        }
+
         $officer = $this->auth->currentOfficer();
         if ($officer === null) {
             throw new RuntimeException('No authenticated officer.');
         }
 
-        $sql = 'INSERT INTO evidence (
-                    evidence_code, evidence_type, title, description, file_path,
-                    collected_at, collected_by_officer_id, storage_location,
-                    chain_status, integrity_hash
-                ) VALUES (
-                    :evidence_code, :evidence_type, :title, :description, :file_path,
-                    :collected_at, :collected_by_officer_id, :storage_location,
-                    :chain_status, :integrity_hash
-                )';
+        $checkStmt = $this->db->prepare('SELECT id FROM crime_reports WHERE id = :id');
+        $checkStmt->execute(['id' => $crimeReportId]);
+        if ($checkStmt->fetchColumn() === false) {
+            throw new RuntimeException('Crime report not found.');
+        }
 
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([
-            'evidence_code' => $data['evidence_code'],
-            'evidence_type' => strtoupper(trim($data['evidence_type'])),
-            'title' => $data['title'],
-            'description' => $data['description'] ?? null,
-            'file_path' => $data['file_path'] ?? null,
-            'collected_at' => $data['collected_at'] ?? null,
-            'collected_by_officer_id' => $data['collected_by_officer_id'] ?? (int)$officer['id'],
-            'storage_location' => $data['storage_location'] ?? null,
-            'chain_status' => strtoupper(trim($data['chain_status'] ?? 'COLLECTED')),
-            'integrity_hash' => $data['integrity_hash'] ?? null,
-        ]);
+        $this->db->beginTransaction();
 
-        $id = (int)$this->db->lastInsertId();
+        try {
+            $sql = 'INSERT INTO evidence (
+                        evidence_code, crime_report_id, evidence_type, title, description, file_path,
+                        collected_at, collected_by_officer_id, storage_location,
+                        chain_status, integrity_hash
+                    ) VALUES (
+                        :evidence_code, :crime_report_id, :evidence_type, :title, :description, :file_path,
+                        :collected_at, :collected_by_officer_id, :storage_location,
+                        :chain_status, :integrity_hash
+                    )';
 
-        $this->auditLogger->logActivity((int)$officer['id'], 'EVIDENCE_UPLOAD', 'evidence', $id, 'Evidence item created/uploaded');
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                'evidence_code' => $data['evidence_code'],
+                'crime_report_id' => $crimeReportId,
+                'evidence_type' => strtoupper(trim($data['evidence_type'])),
+                'title' => $data['title'],
+                'description' => $data['description'] ?? null,
+                'file_path' => $data['file_path'] ?? null,
+                'collected_at' => $data['collected_at'] ?? null,
+                'collected_by_officer_id' => $data['collected_by_officer_id'] ?? (int)$officer['id'],
+                'storage_location' => $data['storage_location'] ?? null,
+                'chain_status' => strtoupper(trim($data['chain_status'] ?? 'COLLECTED')),
+                'integrity_hash' => $data['integrity_hash'] ?? null,
+            ]);
 
-        return $id;
+            $id = (int)$this->db->lastInsertId();
+            $this->auditLogger->logActivity((int)$officer['id'], 'EVIDENCE_UPLOAD', 'evidence', $id, 'Evidence item created/uploaded');
+
+            $this->linkEvidenceToCrime($crimeReportId, $id, $data['relation_note'] ?? null);
+
+            $this->db->commit();
+
+            return $id;
+        } catch (Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
     }
 
     public function updateEvidenceChainStatus(int $evidenceId, string $chainStatus): void
@@ -107,6 +129,23 @@ final class EvidenceAndInvestigation
         $this->auditLogger->logActivity((int)$officer['id'], 'UPDATE', 'crime_report_evidence', $id, 'Linked evidence to crime report');
 
         return $id;
+    }
+
+    public function deleteEvidence(int $evidenceId): void
+    {
+        $this->auth->enforce('DELETE', 'evidence');
+
+        $stmt = $this->db->prepare('DELETE FROM evidence WHERE id = :id');
+        $stmt->execute(['id' => $evidenceId]);
+
+        if ($stmt->rowCount() === 0) {
+            throw new RuntimeException('Evidence not found.');
+        }
+
+        $officer = $this->auth->currentOfficer();
+        if ($officer !== null) {
+            $this->auditLogger->logActivity((int)$officer['id'], 'DELETE', 'evidence', $evidenceId, 'Evidence deleted');
+        }
     }
 
     public function linkEvidenceToSuspect(int $suspectId, int $evidenceId, string $relevanceReason): int
