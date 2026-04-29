@@ -1,4 +1,4 @@
--- Demo data for ICICIDS
+-- Demo data for ICICIDS (Integrated Crime Investigation and Criminal Identification Database System)
 -- Import this after init.sql
 
 USE ICICIDS;

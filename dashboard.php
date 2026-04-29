@@ -1,3 +1,4 @@
+<!-- Dashboard page: overview stats and recent crime report snapshot. -->
 <?php if ($bannerExists): ?>
     <section class="card">
         <img src="<?= h((string)$bannerPath) ?>" alt="ICICIDS Banner" class="hero-banner">

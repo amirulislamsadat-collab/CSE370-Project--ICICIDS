@@ -1,3 +1,4 @@
+<!-- Login page: officer authentication form with project branding assets. -->
 <div class="card login-box">
     <?php if ($bannerExists): ?>
         <img src="<?= h((string)$bannerPath) ?>" alt="Project Banner" class="hero-banner">

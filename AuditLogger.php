@@ -3,6 +3,12 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/Auth.php';
 
+// Audit and governance service.
+// Responsibilities:
+// - Persist officer activity and login logs.
+// - Handle schema request submit/review lifecycle.
+// - Store user feedback and expose privileged log readers.
+
 final class AuditLogger
 {
     private PDO $db;
@@ -24,6 +30,7 @@ final class AuditLogger
         ?string $ipLocation = null,
         ?string $userAgent = null
     ): int {
+        // Generic officer activity sink used by domain services.
         $sql = 'INSERT INTO officer_activity (
                     officer_id, activity_type, target_table, target_record_id,
                     action_details, ip_address, ip_location, user_agent
@@ -56,6 +63,7 @@ final class AuditLogger
         ?string $deviceFingerprint = null,
         ?string $failureReason = null
     ): int {
+        // Generic login log sink used by auth and security flows.
         $sql = 'INSERT INTO login_logs (
                     officer_id, email_attempted, login_status, ip_address, ip_location,
                     user_agent, device_fingerprint, failure_reason
@@ -84,6 +92,7 @@ final class AuditLogger
         string $reason,
         string $sqlProposal
     ): int {
+        // Grade-aware schema proposal entry point.
         $this->auth->enforce('CREATE', 'schema_requests');
 
         $officer = $this->auth->currentOfficer();
@@ -121,6 +130,7 @@ final class AuditLogger
 
     public function reviewSchemaRequest(int $requestId, string $status, ?string $reviewNotes = null): void
     {
+        // Grade-aware schema request approval/rejection/implementation path.
         $this->auth->enforce('UPDATE', 'schema_requests');
 
         $officer = $this->auth->currentOfficer();
@@ -161,6 +171,7 @@ final class AuditLogger
 
     public function submitFeedback(string $moduleName, string $category, string $message): int
     {
+        // Feedback channel available according to RBAC rules.
         $this->auth->enforce('CREATE', 'feedbacks');
 
         $officer = $this->auth->currentOfficer();
@@ -187,6 +198,7 @@ final class AuditLogger
 
     public function listOfficerActivity(int $limit = 100): array
     {
+        // Restricted to Grade 1 by Auth::enforce().
         $this->auth->enforce('READ', 'officer_activity');
 
         $stmt = $this->db->prepare('SELECT * FROM officer_activity ORDER BY created_at DESC LIMIT :limit');
@@ -198,6 +210,7 @@ final class AuditLogger
 
     public function listLoginLogs(int $limit = 100): array
     {
+        // Restricted to Grade 1 by Auth::enforce().
         $this->auth->enforce('READ', 'login_logs');
 
         $stmt = $this->db->prepare('SELECT * FROM login_logs ORDER BY login_time DESC LIMIT :limit');

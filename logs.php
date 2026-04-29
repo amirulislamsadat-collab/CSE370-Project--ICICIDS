@@ -1,3 +1,4 @@
+<!-- Logs page: officer activity and authentication audit trails. -->
 <section class="card">
     <h2>Officer Activity Logs</h2>
     <div class="table-wrap">

@@ -1,3 +1,4 @@
+<!-- Layout shell: opens HTML document, loads global CSS, and renders flash messages. -->
 <!doctype html>
 <html lang="en">
 <head>

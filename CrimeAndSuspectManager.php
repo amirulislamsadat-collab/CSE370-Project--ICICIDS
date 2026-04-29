@@ -4,6 +4,12 @@ declare(strict_types=1);
 require_once __DIR__ . '/Auth.php';
 require_once __DIR__ . '/AuditLogger.php';
 
+// Core case workflow service.
+// Responsibilities:
+// - Manage crime reports and suspect lifecycle.
+// - Confirm suspects as criminals with closed/referred case guards.
+// - Write audit events for all mutating actions.
+
 final class CrimeAndSuspectManager
 {
     private PDO $db;
@@ -19,6 +25,7 @@ final class CrimeAndSuspectManager
 
     public function createCrimeReport(array $data): int
     {
+        // Validate CASE-YYYY-0001 format and ensure case year matches crime date year.
         $this->auth->enforce('CREATE', 'crime_reports');
 
         $caseNumber = strtoupper(trim((string)($data['case_number'] ?? '')));
@@ -79,6 +86,7 @@ final class CrimeAndSuspectManager
 
     public function updateCrimeReportStatus(int $crimeReportId, string $status, ?string $noteText = null): void
     {
+        // Update case status and optionally append an investigation timeline note.
         $this->auth->enforce('UPDATE', 'crime_reports');
 
         $officer = $this->auth->currentOfficer();
@@ -161,6 +169,7 @@ final class CrimeAndSuspectManager
 
     public function createSuspect(array $data): int
     {
+        // New suspects must belong to a case and pass phone/NID validation rules.
         $this->auth->enforce('CREATE', 'suspects');
 
         $crimeReportId = isset($data['crime_report_id']) ? (int)$data['crime_report_id'] : 0;
@@ -255,8 +264,46 @@ final class CrimeAndSuspectManager
         $this->auditLogger->logActivity((int)$officer['id'], 'SUSPECT_UPDATE', 'suspects', $suspectId, 'Suspect status updated');
     }
 
+    public function unlinkSuspectFromCrime(int $suspectId, int $crimeReportId): void
+    {
+        // Remove explicit bridge link and clear primary link when it points to the same case.
+        $this->auth->enforce('DELETE', 'crime_report_suspects');
+
+        $officer = $this->auth->currentOfficer();
+        if ($officer === null) {
+            throw new RuntimeException('No authenticated officer.');
+        }
+
+        $this->db->beginTransaction();
+
+        try {
+            $deleteStmt = $this->db->prepare('DELETE FROM crime_report_suspects WHERE suspect_id = :suspect_id AND crime_report_id = :crime_report_id');
+            $deleteStmt->execute([
+                'suspect_id' => $suspectId,
+                'crime_report_id' => $crimeReportId,
+            ]);
+
+            $clearPrimaryStmt = $this->db->prepare('UPDATE suspects
+                                                   SET crime_report_id = CASE WHEN crime_report_id = :crime_report_id THEN NULL ELSE crime_report_id END,
+                                                       updated_at = NOW()
+                                                   WHERE id = :suspect_id');
+            $clearPrimaryStmt->execute([
+                'crime_report_id' => $crimeReportId,
+                'suspect_id' => $suspectId,
+            ]);
+
+            $this->db->commit();
+
+            $this->auditLogger->logActivity((int)$officer['id'], 'DELETE', 'crime_report_suspects', null, 'Unlinked suspect from crime report');
+        } catch (Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+    }
+
     public function linkSuspectToCrime(int $crimeReportId, int $suspectId, string $relationType = 'PRIMARY', ?string $notes = null): int
     {
+        // Persist case-suspect association metadata in bridge table.
         $this->auth->enforce('CREATE', 'crime_report_suspects');
 
         $officer = $this->auth->currentOfficer();
@@ -295,6 +342,7 @@ final class CrimeAndSuspectManager
         string $currentStatus
     ): int
     {
+        // Confirm suspect as criminal only for CLOSED or REFERRED cases.
         $this->auth->enforce('CREATE', 'criminals');
 
         $officer = $this->auth->currentOfficer();
@@ -381,6 +429,63 @@ final class CrimeAndSuspectManager
         return $id;
     }
 
+    public function unlinkCriminalFromSuspect(int $criminalId): void
+    {
+        // Keep criminal profile but remove direct suspect association.
+        $this->auth->enforce('UPDATE', 'criminals');
+
+        $officer = $this->auth->currentOfficer();
+        if ($officer === null) {
+            throw new RuntimeException('No authenticated officer.');
+        }
+
+        $stmt = $this->db->prepare('UPDATE criminals SET suspect_id = NULL, updated_at = NOW() WHERE id = :id');
+        $stmt->execute(['id' => $criminalId]);
+
+        if ($stmt->rowCount() === 0) {
+            throw new RuntimeException('Criminal not found.');
+        }
+
+        $this->auditLogger->logActivity((int)$officer['id'], 'UPDATE', 'criminals', $criminalId, 'Unlinked criminal from suspect');
+    }
+
+    public function unlinkCriminalFromCrime(int $criminalId, int $crimeReportId): void
+    {
+        // Remove criminal-history case link and clear primary crime link when matched.
+        $this->auth->enforce('UPDATE', 'criminal_history');
+
+        $officer = $this->auth->currentOfficer();
+        if ($officer === null) {
+            throw new RuntimeException('No authenticated officer.');
+        }
+
+        $this->db->beginTransaction();
+
+        try {
+            $historyStmt = $this->db->prepare('DELETE FROM criminal_history WHERE criminal_id = :criminal_id AND crime_report_id = :crime_report_id');
+            $historyStmt->execute([
+                'criminal_id' => $criminalId,
+                'crime_report_id' => $crimeReportId,
+            ]);
+
+            $primaryStmt = $this->db->prepare('UPDATE criminals
+                                               SET crime_report_id = CASE WHEN crime_report_id = :crime_report_id THEN NULL ELSE crime_report_id END,
+                                                   updated_at = NOW()
+                                               WHERE id = :criminal_id');
+            $primaryStmt->execute([
+                'criminal_id' => $criminalId,
+                'crime_report_id' => $crimeReportId,
+            ]);
+
+            $this->db->commit();
+
+            $this->auditLogger->logActivity((int)$officer['id'], 'UPDATE', 'criminal_history', $criminalId, 'Unlinked criminal from crime report');
+        } catch (Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+    }
+
     public function addCriminalHistory(
         int $criminalId,
         string $offenseTitle,
@@ -390,6 +495,7 @@ final class CrimeAndSuspectManager
         ?string $jurisdiction = null,
         ?string $notes = null
     ): int {
+        // History rows tied to a case follow the same CLOSED/REFERRED guard.
         $this->auth->enforce('CREATE', 'criminal_history');
 
         $officer = $this->auth->currentOfficer();
@@ -440,6 +546,7 @@ final class CrimeAndSuspectManager
 
     public function confirmCriminalForCrime(array $data): int
     {
+        // Transaction wrapper: create/reuse criminal profile, then attach offense history.
         $this->auth->enforce('CREATE', 'criminals');
 
         $officer = $this->auth->currentOfficer();
@@ -504,6 +611,7 @@ final class CrimeAndSuspectManager
 
     public function deleteCrimeReport(int $crimeReportId): void
     {
+        // Physical delete may fail when FK RESTRICT constraints still have dependents.
         $this->auth->enforce('DELETE', 'crime_reports');
 
         $stmt = $this->db->prepare('DELETE FROM crime_reports WHERE id = :id');

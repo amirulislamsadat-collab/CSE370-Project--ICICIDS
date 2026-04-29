@@ -1,4 +1,5 @@
 <?php
+// Schema requests page: proposal form (authorized) and request history table.
 $canSubmitSchema = $canSubmitSchema ?? false;
 $schemas = $schemas ?? [];
 ?>

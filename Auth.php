@@ -3,6 +3,12 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/Database.php';
 
+// Authentication and authorization service.
+// Responsibilities:
+// - Session-based login/logout and officer context management.
+// - Role-based access control enforcement for table/operation pairs.
+// - Security audit inserts for login attempts and officer activity.
+
 final class Auth
 {
     public const ROLE_GRADE_1 = 'GRADE_1';
@@ -24,6 +30,7 @@ final class Auth
 
     public static function hashPassword(string $plainPassword): string
     {
+        // Use PHP default password algorithm for safe long-term hashing.
         return password_hash($plainPassword, PASSWORD_DEFAULT);
     }
 
@@ -35,6 +42,7 @@ final class Auth
         ?string $ipLocation = null,
         ?string $deviceFingerprint = null
     ): bool {
+        // Authenticate an active officer account and store a minimal session identity.
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
         }
@@ -79,6 +87,7 @@ final class Auth
 
     public function logout(?string $ipAddress = null, ?string $userAgent = null, ?string $ipLocation = null): void
     {
+        // Record logout activity before clearing session state.
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
         }
@@ -132,6 +141,7 @@ final class Auth
 
     public function enforce(string $operation, ?string $table = null): void
     {
+        // Central RBAC policy matrix for Grade 1, 2, and 3 officers.
         $this->requireAuthentication();
 
         $officer = $this->currentOfficer();
@@ -255,6 +265,7 @@ final class Auth
         ?string $deviceFingerprint,
         ?string $failureReason
     ): void {
+        // Internal helper used by login() to persist all authentication outcomes.
         $sql = 'INSERT INTO login_logs (
                     officer_id, email_attempted, login_status, ip_address, ip_location,
                     user_agent, device_fingerprint, failure_reason
@@ -285,6 +296,7 @@ final class Auth
         ?string $ipLocation,
         ?string $userAgent
     ): void {
+        // Internal helper for audit trail writes originating from auth actions.
         $sql = 'INSERT INTO officer_activity (
                     officer_id, activity_type, target_table, target_record_id,
                     action_details, ip_address, ip_location, user_agent

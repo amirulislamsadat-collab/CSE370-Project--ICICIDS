@@ -1,3 +1,9 @@
+/*
+ * Frontend behavior bundle.
+ * - Confirmation prompts for destructive/important forms.
+ * - Auto-uppercase for tagged inputs.
+ * - Client-side case-year vs crime-date-year consistency check.
+ */
 (function () {
     var forms = document.querySelectorAll('form[data-confirm]');
     for (var i = 0; i < forms.length; i++) {

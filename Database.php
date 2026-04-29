@@ -1,6 +1,12 @@
 <?php
 declare(strict_types=1);
 
+// ICICIDS Database gateway.
+// Responsibilities:
+// - Build a single PDO connection for the full request lifecycle.
+// - Enforce secure defaults (exceptions, associative fetch, native prepares).
+// - Provide one shared connection instance to all services.
+
 final class Database
 {
     private static ?Database $instance = null;

@@ -1,4 +1,5 @@
 <?php
+// Criminals page: confirmation flow for closed/referred cases and history linkage.
 $canCreateCriminal = $canCreateCriminal ?? false;
 $canLinkCriminal = $canLinkCriminal ?? false;
 $canDeleteCriminal = $canDeleteCriminal ?? false;
@@ -10,7 +11,7 @@ $criminalCrimes = $criminalCrimes ?? [];
 <div class="grid-2">
     <?php if ($canCreateCriminal): ?>
         <section class="card">
-            <h2>Confirm Criminal (Closed/Referenced Case)</h2>
+            <h2>Confirm Criminal (Closed/Referred Case)</h2>
             <form method="post">
                 <input type="hidden" name="action" value="create_criminal">
                 <input type="number" name="suspect_id" required placeholder="Suspect ID">
@@ -66,6 +67,27 @@ $criminalCrimes = $criminalCrimes ?? [];
             </form>
         </section>
     <?php endif; ?>
+
+    <?php if ($canLinkCriminal): ?>
+        <section class="card">
+            <h2>Unlink Criminal From Suspect</h2>
+            <form method="post">
+                <input type="hidden" name="action" value="unlink_criminal_suspect">
+                <input type="number" name="criminal_id" required placeholder="Criminal ID to unlink">
+                <button type="submit">Unlink Suspect</button>
+            </form>
+        </section>
+
+        <section class="card">
+            <h2>Unlink Criminal From Case</h2>
+            <form method="post">
+                <input type="hidden" name="action" value="unlink_criminal_case">
+                <input type="number" name="criminal_id" required placeholder="Criminal ID to unlink">
+                <input type="number" name="crime_report_id" required placeholder="Crime report ID to unlink from">
+                <button type="submit">Unlink Case</button>
+            </form>
+        </section>
+    <?php endif; ?>
 </div>
 
 <?php if ($criminalDetail): ?>
@@ -94,7 +116,7 @@ $criminalCrimes = $criminalCrimes ?? [];
                                 <?= h((string)$criminalDetail['first_name'] . ' ' . (string)$criminalDetail['last_name']) ?>
                             </a>
                         <?php else: ?>
-                            <?= h('') ?>
+                            <?= h('Unlinked suspect') ?>
                         <?php endif; ?>
                     </td>
                     <th>National ID</th>
@@ -151,7 +173,7 @@ $criminalCrimes = $criminalCrimes ?? [];
                 <tr>
                     <td><a href="index.php?view=criminals&criminal_id=<?= h((string)$row['id']) ?>"><?= h((string)$row['id']) ?></a></td>
                     <td><?= h((string)$row['criminal_code']) ?></td>
-                    <td><?= h((string)($row['first_name'] ?? '') . ' ' . (string)($row['last_name'] ?? '')) ?></td>
+                    <td><?= h(trim((string)($row['first_name'] ?? '') . ' ' . (string)($row['last_name'] ?? '')) ?: 'Unlinked suspect') ?></td>
                     <td><?= h((string)$row['risk_level']) ?></td>
                     <td><?= h((string)$row['current_status']) ?></td>
                     <td><?= h((string)$row['created_at']) ?></td>

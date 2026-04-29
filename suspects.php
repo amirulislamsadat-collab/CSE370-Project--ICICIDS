@@ -1,6 +1,8 @@
 <?php
+// Suspects page: suspect lifecycle operations and case/evidence relationship views.
 $canReadSuspects = $canReadSuspects ?? false;
 $canCreateSuspect = $canCreateSuspect ?? false;
+$canUpdateSuspect = $canUpdateSuspect ?? false;
 $canLinkSuspect = $canLinkSuspect ?? false;
 $canDeleteSuspect = $canDeleteSuspect ?? false;
 $suspects = $suspects ?? [];
@@ -73,6 +75,35 @@ $suspectEvidence = $suspectEvidence ?? [];
                 <input type="hidden" name="action" value="delete_suspect">
                 <input type="number" name="suspect_id" required placeholder="Suspect ID">
                 <button type="submit">Delete</button>
+            </form>
+        </section>
+    <?php endif; ?>
+
+    <?php if ($canUpdateSuspect): ?>
+        <section class="card">
+            <h2>Update Suspect Status</h2>
+            <form method="post">
+                <input type="hidden" name="action" value="update_suspect_status">
+                <input type="number" name="suspect_id" required placeholder="Suspect ID to update">
+                <select name="suspect_status">
+                    <option>PERSON_OF_INTEREST</option>
+                    <option>WANTED</option>
+                    <option>ARRESTED</option>
+                    <option>CLEARED</option>
+                </select>
+                <button type="submit">Update Status</button>
+            </form>
+        </section>
+    <?php endif; ?>
+
+    <?php if ($canLinkSuspect): ?>
+        <section class="card">
+            <h2>Unlink Suspect From Crime</h2>
+            <form method="post">
+                <input type="hidden" name="action" value="unlink_suspect">
+                <input type="number" name="suspect_id" required placeholder="Suspect ID to unlink">
+                <input type="number" name="crime_report_id" required placeholder="Crime report ID to unlink from">
+                <button type="submit">Unlink</button>
             </form>
         </section>
     <?php endif; ?>

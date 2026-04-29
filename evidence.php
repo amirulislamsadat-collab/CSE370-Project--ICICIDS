@@ -1,4 +1,5 @@
 <?php
+// Evidence page: evidence CRUD, chain-status updates, and entity links.
 $canCreateEvidence = $canCreateEvidence ?? false;
 $canUpdateEvidence = $canUpdateEvidence ?? false;
 $canLinkEvidence = $canLinkEvidence ?? false;
@@ -166,6 +167,26 @@ $evidences = $evidences ?? [];
             <input type="number" name="crime_report_id" required placeholder="Crime report ID">
             <input name="relation_note" placeholder="Relation note (optional)">
             <button type="submit">Link</button>
+        </form>
+    </section>
+
+    <section class="card">
+        <h2>Unlink Evidence From Crime</h2>
+        <form method="post">
+            <input type="hidden" name="action" value="unlink_evidence_case">
+            <input type="number" name="evidence_id" required placeholder="Evidence ID to unlink">
+            <input type="number" name="crime_report_id" required placeholder="Crime report ID to unlink from">
+            <button type="submit">Unlink</button>
+        </form>
+    </section>
+
+    <section class="card">
+        <h2>Unlink Evidence From Suspect</h2>
+        <form method="post">
+            <input type="hidden" name="action" value="unlink_evidence_suspect">
+            <input type="number" name="evidence_id" required placeholder="Evidence ID to unlink">
+            <input type="number" name="suspect_id" required placeholder="Suspect ID to unlink from">
+            <button type="submit">Unlink</button>
         </form>
     </section>
 <?php endif; ?>

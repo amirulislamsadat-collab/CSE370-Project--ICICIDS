@@ -1,4 +1,4 @@
--- Crime Reporting and Management System
+-- Integrated Crime Investigation and Criminal Identification Database System (ICICIDS)
 -- STEP 1: init.sql
 -- Target: MySQL 8+ / MariaDB 10.5+ (InnoDB, utf8mb4)
 -- Profile: ICICIDS (phpMyAdmin import-ready)
@@ -84,7 +84,7 @@ CREATE TABLE suspects (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
-    crime_report_id BIGINT UNSIGNED NOT NULL,
+    crime_report_id BIGINT UNSIGNED NULL,
     date_of_birth DATE NULL,
     gender ENUM('MALE', 'FEMALE', 'OTHER', 'UNKNOWN') NOT NULL DEFAULT 'UNKNOWN',
     national_id VARCHAR(80) NULL,
@@ -98,7 +98,7 @@ CREATE TABLE suspects (
     CONSTRAINT uq_suspects_national_id UNIQUE (national_id),
     CONSTRAINT fk_suspects_primary_crime
         FOREIGN KEY (crime_report_id) REFERENCES crime_reports(id)
-        ON UPDATE CASCADE ON DELETE RESTRICT,
+        ON UPDATE CASCADE ON DELETE SET NULL,
     CONSTRAINT fk_suspects_created_by
         FOREIGN KEY (created_by_officer_id) REFERENCES officers(id)
         ON UPDATE CASCADE ON DELETE RESTRICT,
@@ -133,7 +133,7 @@ CREATE TABLE crime_report_suspects (
 CREATE TABLE criminals (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     suspect_id BIGINT UNSIGNED NULL,
-    crime_report_id BIGINT UNSIGNED NOT NULL,
+    crime_report_id BIGINT UNSIGNED NULL,
     criminal_code VARCHAR(40) NOT NULL UNIQUE,
     profile_summary TEXT NOT NULL,
     risk_level ENUM('LOW', 'MEDIUM', 'HIGH', 'CRITICAL') NOT NULL DEFAULT 'MEDIUM',
@@ -147,7 +147,7 @@ CREATE TABLE criminals (
         ON UPDATE CASCADE ON DELETE SET NULL,
     CONSTRAINT fk_criminals_primary_crime
         FOREIGN KEY (crime_report_id) REFERENCES crime_reports(id)
-        ON UPDATE CASCADE ON DELETE RESTRICT,
+        ON UPDATE CASCADE ON DELETE SET NULL,
     CONSTRAINT fk_criminals_added_by
         FOREIGN KEY (added_by_officer_id) REFERENCES officers(id)
         ON UPDATE CASCADE ON DELETE RESTRICT,
@@ -199,7 +199,7 @@ CREATE TABLE criminal_history (
 CREATE TABLE evidence (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     evidence_code VARCHAR(50) NOT NULL UNIQUE,
-    crime_report_id BIGINT UNSIGNED NOT NULL,
+    crime_report_id BIGINT UNSIGNED NULL,
     evidence_type ENUM('FINGERPRINT', 'DOCUMENT', 'DIGITAL_FILE', 'WEAPON', 'BIOLOGICAL', 'VIDEO', 'AUDIO', 'OTHER') NOT NULL,
     title VARCHAR(150) NOT NULL,
     description TEXT NULL,
@@ -213,7 +213,7 @@ CREATE TABLE evidence (
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_evidence_primary_crime
         FOREIGN KEY (crime_report_id) REFERENCES crime_reports(id)
-        ON UPDATE CASCADE ON DELETE RESTRICT,
+        ON UPDATE CASCADE ON DELETE SET NULL,
     CONSTRAINT fk_evidence_collected_by
         FOREIGN KEY (collected_by_officer_id) REFERENCES officers(id)
         ON UPDATE CASCADE ON DELETE SET NULL,

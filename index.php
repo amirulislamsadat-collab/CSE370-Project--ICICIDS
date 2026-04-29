@@ -1,6 +1,12 @@
 <?php
 declare(strict_types=1);
 
+// ICICIDS request router and page controller.
+// Responsibilities:
+// - Bootstrap core services.
+// - Dispatch POST actions to domain managers.
+// - Build permission-aware view models for page templates.
+
 require_once __DIR__ . '/Database.php';
 require_once __DIR__ . '/Auth.php';
 require_once __DIR__ . '/AuditLogger.php';
@@ -37,6 +43,7 @@ function flashGet(): ?array
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Action dispatcher for all mutating operations.
     $action = (string)($_POST['action'] ?? '');
 
     try {
@@ -67,6 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $auth->requireAuthentication();
 
         if ($action === 'create_crime') {
+            // Normalize datetime-local browser input before service validation.
             $rawDate = trim((string)($_POST['crime_datetime'] ?? ''));
             $crimeDate = str_replace('T', ' ', $rawDate);
             if (strlen($crimeDate) === 16) {
@@ -159,6 +167,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
+        if ($action === 'unlink_evidence_case') {
+            $evidenceManager->unlinkEvidenceFromCrime(
+                (int)($_POST['evidence_id'] ?? 0),
+                (int)($_POST['crime_report_id'] ?? 0)
+            );
+
+            flashSet('success', 'Evidence unlinked from crime report.');
+            header('Location: index.php?view=evidence');
+            exit;
+        }
+
+        if ($action === 'unlink_evidence_suspect') {
+            $evidenceManager->unlinkEvidenceFromSuspect(
+                (int)($_POST['suspect_id'] ?? 0),
+                (int)($_POST['evidence_id'] ?? 0)
+            );
+
+            flashSet('success', 'Evidence unlinked from suspect.');
+            header('Location: index.php?view=evidence');
+            exit;
+        }
+
         if ($action === 'create_suspect') {
             $crimeManager->createSuspect([
                 'crime_report_id' => (int)($_POST['crime_report_id'] ?? 0),
@@ -197,6 +227,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
 
             flashSet('success', 'Suspect linked to crime report.');
+            header('Location: index.php?view=suspects');
+            exit;
+        }
+
+        if ($action === 'update_suspect_status') {
+            $crimeManager->updateSuspectStatus(
+                (int)($_POST['suspect_id'] ?? 0),
+                trim((string)($_POST['suspect_status'] ?? 'PERSON_OF_INTEREST'))
+            );
+
+            flashSet('success', 'Suspect status updated.');
+            header('Location: index.php?view=suspects');
+            exit;
+        }
+
+        if ($action === 'unlink_suspect') {
+            $crimeManager->unlinkSuspectFromCrime(
+                (int)($_POST['suspect_id'] ?? 0),
+                (int)($_POST['crime_report_id'] ?? 0)
+            );
+
+            flashSet('success', 'Suspect unlinked from crime report.');
             header('Location: index.php?view=suspects');
             exit;
         }
@@ -245,6 +297,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
+        if ($action === 'unlink_criminal_suspect') {
+            $crimeManager->unlinkCriminalFromSuspect((int)($_POST['criminal_id'] ?? 0));
+
+            flashSet('success', 'Criminal unlinked from suspect.');
+            header('Location: index.php?view=criminals');
+            exit;
+        }
+
+        if ($action === 'unlink_criminal_case') {
+            $crimeManager->unlinkCriminalFromCrime(
+                (int)($_POST['criminal_id'] ?? 0),
+                (int)($_POST['crime_report_id'] ?? 0)
+            );
+
+            flashSet('success', 'Criminal unlinked from case.');
+            header('Location: index.php?view=criminals');
+            exit;
+        }
+
         if ($action === 'submit_feedback') {
             $audit->submitFeedback(
                 trim((string)($_POST['module_name'] ?? 'OTHER')),
@@ -274,6 +345,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: index.php');
         exit;
     } catch (Throwable $e) {
+        // Translate known FK integrity errors into user-friendly messages.
         $message = $e->getMessage();
 
         if ($action === 'delete_crime' && $e instanceof PDOException) {
@@ -324,6 +396,7 @@ $canCreateCrime = false;
 $canUpdateCrime = false;
 $canDeleteCrime = false;
 $canCreateSuspect = false;
+$canUpdateSuspect = false;
 $canLinkSuspect = false;
 $canDeleteSuspect = false;
 $canCreateCriminal = false;
@@ -360,6 +433,7 @@ $activityLogs = [];
 $loginLogs = [];
 
 if ($isAuthed) {
+    // Permission matrix for tabs, actions, and protected datasets.
     $canReadCrimes = $auth->can('READ', 'crime_reports');
     $canReadSuspects = $auth->can('READ', 'suspects');
     $canReadCriminals = $auth->can('READ', 'criminals');
@@ -372,6 +446,7 @@ if ($isAuthed) {
     $canUpdateCrime = $auth->can('UPDATE', 'crime_reports');
     $canDeleteCrime = $auth->can('DELETE', 'crime_reports');
     $canCreateSuspect = $auth->can('CREATE', 'suspects');
+    $canUpdateSuspect = $auth->can('UPDATE', 'suspects');
     $canLinkSuspect = $auth->can('CREATE', 'crime_report_suspects');
     $canDeleteSuspect = $auth->can('DELETE', 'suspects');
     $canCreateCriminal = $auth->can('CREATE', 'criminals');
@@ -400,6 +475,7 @@ if ($isAuthed) {
     }
 
     if ($canReadCrimes) {
+        // Dashboard counters and recent case list.
         foreach (['officers', 'crime_reports', 'suspects', 'evidence', 'criminals'] as $table) {
             $stmt = $db->query('SELECT COUNT(*) AS total FROM ' . $table);
             $stats[$table] = (int)($stmt->fetch()['total'] ?? 0);

@@ -1,4 +1,5 @@
 <?php
+// Navigation partial: prepares safe defaults and renders role-aware tabs.
 $logoExists = $logoExists ?? false;
 $logoPath = $logoPath ?? '';
 $officer = $officer ?? ['name' => 'Officer'];

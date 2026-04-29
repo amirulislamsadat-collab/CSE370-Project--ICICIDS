@@ -1,3 +1,4 @@
+<!-- Feedback page: submission form and feedback listing table. -->
 <?php if ($canSubmitFeedback): ?>
     <section class="card">
         <h2>Submit Feedback</h2>

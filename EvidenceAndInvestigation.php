@@ -4,6 +4,12 @@ declare(strict_types=1);
 require_once __DIR__ . '/Auth.php';
 require_once __DIR__ . '/AuditLogger.php';
 
+// Evidence and investigation timeline service.
+// Responsibilities:
+// - Create/manage evidence and link it to cases and suspects.
+// - Record investigation progress updates and interviews.
+// - Build merged case timelines for review screens.
+
 final class EvidenceAndInvestigation
 {
     private PDO $db;
@@ -19,6 +25,7 @@ final class EvidenceAndInvestigation
 
     public function createEvidence(array $data): int
     {
+        // Evidence always starts with a valid primary case and is inserted transactionally.
         $this->auth->enforce('CREATE', 'evidence');
 
         $crimeReportId = isset($data['crime_report_id']) ? (int)$data['crime_report_id'] : 0;
@@ -81,6 +88,7 @@ final class EvidenceAndInvestigation
 
     public function updateEvidenceChainStatus(int $evidenceId, string $chainStatus): void
     {
+        // Chain-of-custody state changes are tracked in both data and audit log.
         $this->auth->enforce('UPDATE', 'evidence');
 
         $officer = $this->auth->currentOfficer();
@@ -103,6 +111,7 @@ final class EvidenceAndInvestigation
 
     public function linkEvidenceToCrime(int $crimeReportId, int $evidenceId, ?string $relationNote = null): int
     {
+        // Bridge row that captures explicit case-evidence relationship context.
         $this->auth->enforce('CREATE', 'crime_report_evidence');
 
         $officer = $this->auth->currentOfficer();
@@ -131,6 +140,43 @@ final class EvidenceAndInvestigation
         return $id;
     }
 
+    public function unlinkEvidenceFromCrime(int $evidenceId, int $crimeReportId): void
+    {
+        // Remove bridge link and clear primary case when it matches.
+        $this->auth->enforce('DELETE', 'crime_report_evidence');
+
+        $officer = $this->auth->currentOfficer();
+        if ($officer === null) {
+            throw new RuntimeException('No authenticated officer.');
+        }
+
+        $this->db->beginTransaction();
+
+        try {
+            $deleteStmt = $this->db->prepare('DELETE FROM crime_report_evidence WHERE evidence_id = :evidence_id AND crime_report_id = :crime_report_id');
+            $deleteStmt->execute([
+                'evidence_id' => $evidenceId,
+                'crime_report_id' => $crimeReportId,
+            ]);
+
+            $clearPrimaryStmt = $this->db->prepare('UPDATE evidence
+                                                   SET crime_report_id = CASE WHEN crime_report_id = :crime_report_id THEN NULL ELSE crime_report_id END,
+                                                       updated_at = NOW()
+                                                   WHERE id = :evidence_id');
+            $clearPrimaryStmt->execute([
+                'crime_report_id' => $crimeReportId,
+                'evidence_id' => $evidenceId,
+            ]);
+
+            $this->db->commit();
+
+            $this->auditLogger->logActivity((int)$officer['id'], 'DELETE', 'crime_report_evidence', null, 'Unlinked evidence from crime report');
+        } catch (Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+    }
+
     public function deleteEvidence(int $evidenceId): void
     {
         $this->auth->enforce('DELETE', 'evidence');
@@ -150,6 +196,7 @@ final class EvidenceAndInvestigation
 
     public function linkEvidenceToSuspect(int $suspectId, int $evidenceId, string $relevanceReason): int
     {
+        // Bridge row that captures suspect-specific evidence relevance.
         $this->auth->enforce('CREATE', 'suspect_evidence');
 
         $officer = $this->auth->currentOfficer();
@@ -178,12 +225,32 @@ final class EvidenceAndInvestigation
         return $id;
     }
 
+    public function unlinkEvidenceFromSuspect(int $suspectId, int $evidenceId): void
+    {
+        // Remove explicit suspect-evidence association.
+        $this->auth->enforce('DELETE', 'suspect_evidence');
+
+        $officer = $this->auth->currentOfficer();
+        if ($officer === null) {
+            throw new RuntimeException('No authenticated officer.');
+        }
+
+        $stmt = $this->db->prepare('DELETE FROM suspect_evidence WHERE suspect_id = :suspect_id AND evidence_id = :evidence_id');
+        $stmt->execute([
+            'suspect_id' => $suspectId,
+            'evidence_id' => $evidenceId,
+        ]);
+
+        $this->auditLogger->logActivity((int)$officer['id'], 'DELETE', 'suspect_evidence', null, 'Unlinked evidence from suspect');
+    }
+
     public function addInvestigationUpdate(
         int $crimeReportId,
         string $updateType,
         string $noteText,
         ?int $progressPercent = null
     ): int {
+        // Enforce progress bound checks before storing timeline updates.
         $this->auth->enforce('UPDATE', 'investigation_updates');
 
         $officer = $this->auth->currentOfficer();
@@ -225,6 +292,7 @@ final class EvidenceAndInvestigation
         string $summary,
         ?int $suspectId = null
     ): int {
+        // Interview records are first-class timeline events, optionally tied to a suspect.
         $this->auth->enforce('UPDATE', 'interviews');
 
         $officer = $this->auth->currentOfficer();
@@ -260,6 +328,7 @@ final class EvidenceAndInvestigation
 
     public function getCaseTimeline(int $crimeReportId): array
     {
+        // Merge updates and interviews into one chronological stream.
         $this->auth->enforce('READ', 'crime_reports');
 
         $updatesStmt = $this->db->prepare('SELECT id, update_type AS type, note_text AS details, created_at AS event_time

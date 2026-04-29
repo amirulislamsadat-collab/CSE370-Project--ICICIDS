@@ -1,4 +1,5 @@
 <?php
+// Crimes page: case details, linked entities, and create/update/delete workflows.
 $crimeDetail = $crimeDetail ?? null;
 $crimeSuspects = $crimeSuspects ?? [];
 $crimeEvidence = $crimeEvidence ?? [];
@@ -6,6 +7,9 @@ $crimeCriminals = $crimeCriminals ?? [];
 $crimeCriminalsBlocked = $crimeCriminalsBlocked ?? false;
 $crimeReports = $crimeReports ?? [];
 $canDeleteCrime = $canDeleteCrime ?? false;
+$canLinkSuspect = $canLinkSuspect ?? false;
+$canLinkEvidence = $canLinkEvidence ?? false;
+$canLinkCriminal = $canLinkCriminal ?? false;
 ?>
 
 <?php if ($crimeDetail): ?>
@@ -160,6 +164,42 @@ $canDeleteCrime = $canDeleteCrime ?? false;
                 <input type="hidden" name="action" value="delete_crime">
                 <input type="number" name="crime_report_id" required placeholder="Crime report ID">
                 <button type="submit">Delete</button>
+            </form>
+        </section>
+    <?php endif; ?>
+
+    <?php if ($canLinkSuspect): ?>
+        <section class="card">
+            <h2>Unlink Suspect From This Crime</h2>
+            <form method="post">
+                <input type="hidden" name="action" value="unlink_suspect">
+                <input type="number" name="suspect_id" required placeholder="Suspect ID to unlink">
+                <input type="number" name="crime_report_id" required placeholder="Crime report ID">
+                <button type="submit">Unlink Suspect</button>
+            </form>
+        </section>
+    <?php endif; ?>
+
+    <?php if ($canLinkEvidence): ?>
+        <section class="card">
+            <h2>Unlink Evidence From This Crime</h2>
+            <form method="post">
+                <input type="hidden" name="action" value="unlink_evidence_case">
+                <input type="number" name="evidence_id" required placeholder="Evidence ID to unlink">
+                <input type="number" name="crime_report_id" required placeholder="Crime report ID">
+                <button type="submit">Unlink Evidence</button>
+            </form>
+        </section>
+    <?php endif; ?>
+
+    <?php if ($canLinkCriminal): ?>
+        <section class="card">
+            <h2>Unlink Criminal From This Crime</h2>
+            <form method="post">
+                <input type="hidden" name="action" value="unlink_criminal_case">
+                <input type="number" name="criminal_id" required placeholder="Criminal ID to unlink">
+                <input type="number" name="crime_report_id" required placeholder="Crime report ID">
+                <button type="submit">Unlink Criminal</button>
             </form>
         </section>
     <?php endif; ?>

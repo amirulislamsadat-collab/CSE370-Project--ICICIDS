@@ -1,4 +1,10 @@
-﻿:root {
+﻿/*
+ * Global UI stylesheet.
+ * - Theme variables and layout primitives.
+ * - Shared component styling (cards, tabs, forms, tables, alerts).
+ * - Responsive grid behavior for small screens.
+ */
+:root {
     --bg: #f4f6f9;
     --card: #ffffff;
     --text: #1f2a37;
