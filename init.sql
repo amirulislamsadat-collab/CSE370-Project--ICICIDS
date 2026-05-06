@@ -32,6 +32,7 @@ DROP TABLE IF EXISTS criminals;
 DROP TABLE IF EXISTS crime_report_suspects;
 DROP TABLE IF EXISTS suspects;
 DROP TABLE IF EXISTS crime_reports;
+DROP TABLE IF EXISTS officer_applications;
 DROP TABLE IF EXISTS officers;
 
 SET foreign_key_checks = 1;
@@ -53,9 +54,32 @@ CREATE TABLE officers (
     INDEX idx_officers_active (is_active)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE officer_applications (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    badge_number VARCHAR(30) NOT NULL,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    email VARCHAR(191) NOT NULL,
+    phone VARCHAR(30) NULL,
+    requested_rank ENUM('GRADE_1', 'GRADE_2', 'GRADE_3') NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    status ENUM('PENDING', 'APPROVED', 'REJECTED') NOT NULL DEFAULT 'PENDING',
+    review_note VARCHAR(255) NULL,
+    reviewed_by_officer_id BIGINT UNSIGNED NULL,
+    reviewed_at DATETIME NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT uq_officer_applications_badge UNIQUE (badge_number),
+    CONSTRAINT uq_officer_applications_email UNIQUE (email),
+    CONSTRAINT fk_officer_applications_reviewed_by
+        FOREIGN KEY (reviewed_by_officer_id) REFERENCES officers(id)
+        ON UPDATE CASCADE ON DELETE SET NULL,
+    INDEX idx_officer_applications_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE crime_reports (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    case_number VARCHAR(40) NOT NULL UNIQUE,
+    case_number VARCHAR(40) NOT NULL,
     crime_type VARCHAR(120) NOT NULL,
     location_text VARCHAR(255) NOT NULL,
     latitude DECIMAL(10,8) NULL,
@@ -73,6 +97,7 @@ CREATE TABLE crime_reports (
     CONSTRAINT fk_crime_reports_assigned_to
         FOREIGN KEY (assigned_officer_id) REFERENCES officers(id)
         ON UPDATE CASCADE ON DELETE SET NULL,
+    INDEX idx_crime_reports_case_number (case_number),
     INDEX idx_crime_reports_type (crime_type),
     INDEX idx_crime_reports_status (investigation_status),
     INDEX idx_crime_reports_datetime (crime_datetime),

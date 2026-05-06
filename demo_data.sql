@@ -29,7 +29,7 @@ INSERT INTO crime_reports (
     case_number, crime_type, location_text, latitude, longitude,
     crime_datetime, description, investigation_status, reported_by_officer_id, assigned_officer_id
 )
-SELECT 'CASE-2026-0001', 'ROBBERY', 'Downtown Sector A', 6.52440000, 3.37920000,
+SELECT 'CRIME-2026/04', 'ROBBERY', 'Downtown Sector A', 6.52440000, 3.37920000,
        '2026-04-20 19:40:00', 'Armed robbery at commercial district entrance.', 'UNDER_INVESTIGATION',
        g1.id, g2.id
 FROM officers g1
@@ -44,7 +44,7 @@ INSERT INTO crime_reports (
     case_number, crime_type, location_text, latitude, longitude,
     crime_datetime, description, investigation_status, reported_by_officer_id, assigned_officer_id
 )
-SELECT 'CASE-2026-0002', 'CYBERCRIME', 'Tech Hub District', 6.46820000, 3.58520000,
+SELECT 'CRIME-2026/04', 'CYBERCRIME', 'Tech Hub District', 6.46820000, 3.58520000,
        '2026-04-18 10:10:00', 'Coordinated phishing and wallet-drain incident.', 'OPEN',
        g1.id, g2.id
 FROM officers g1
@@ -59,7 +59,7 @@ INSERT INTO crime_reports (
     case_number, crime_type, location_text, latitude, longitude,
     crime_datetime, description, investigation_status, reported_by_officer_id, assigned_officer_id
 )
-SELECT 'CASE-2026-0003', 'ASSAULT', 'Riverside Block C', 6.43000000, 3.43000000,
+SELECT 'CRIME-2026/04', 'ASSAULT', 'Riverside Block C', 6.43000000, 3.43000000,
        '2026-04-16 22:15:00', 'Late-night assault reported by neighborhood patrol.', 'CLOSED',
        g1.id, g2.id
 FROM officers g1
@@ -74,7 +74,7 @@ INSERT INTO crime_reports (
     case_number, crime_type, location_text, latitude, longitude,
     crime_datetime, description, investigation_status, reported_by_officer_id, assigned_officer_id
 )
-SELECT 'CASE-2026-0004', 'THEFT', 'Old Market Lane', 6.50010000, 3.42090000,
+SELECT 'CRIME-2026/04', 'THEFT', 'Old Market Lane', 6.50010000, 3.42090000,
        '2026-04-14 08:30:00', 'Reported pickpocketing incident with no suspect identified.', 'OPEN',
        g1.id, g2.id
 FROM officers g1
@@ -89,7 +89,7 @@ INSERT INTO crime_reports (
     case_number, crime_type, location_text, latitude, longitude,
     crime_datetime, description, investigation_status, reported_by_officer_id, assigned_officer_id
 )
-SELECT 'CASE-2026-0005', 'BURGLARY', 'Harbor View Estate', 6.47120000, 3.51230000,
+SELECT 'CRIME-2026/04', 'BURGLARY', 'Harbor View Estate', 6.47120000, 3.51230000,
        '2026-04-12 02:10:00', 'Forced entry reported; evidence recovered on site.', 'OPEN',
        g1.id, g2.id
 FROM officers g1
@@ -104,7 +104,7 @@ INSERT INTO crime_reports (
     case_number, crime_type, location_text, latitude, longitude,
     crime_datetime, description, investigation_status, reported_by_officer_id, assigned_officer_id
 )
-SELECT 'CASE-2026-0006', 'KIDNAPPING', 'East Ring Road', 6.45510000, 3.45170000,
+SELECT 'CRIME-2026/04', 'KIDNAPPING', 'East Ring Road', 6.45510000, 3.45170000,
        '2026-04-10 21:05:00', 'Suspect identified; investigation ongoing.', 'UNDER_INVESTIGATION',
        g1.id, g2.id
 FROM officers g1
@@ -119,7 +119,7 @@ INSERT INTO crime_reports (
     case_number, crime_type, location_text, latitude, longitude,
     crime_datetime, description, investigation_status, reported_by_officer_id, assigned_officer_id
 )
-SELECT 'CASE-2025-1001', 'ROBBERY', 'Lagos Island Precinct', 6.45600000, 3.40300000,
+SELECT 'CRIME-2025/11', 'ROBBERY', 'Lagos Island Precinct', 6.45600000, 3.40300000,
        '2025-11-08 18:20:00', 'Closed robbery case with confirmed conviction.', 'CLOSED',
        g1.id, g1.id
 FROM officers g1
@@ -133,7 +133,7 @@ INSERT INTO crime_reports (
     case_number, crime_type, location_text, latitude, longitude,
     crime_datetime, description, investigation_status, reported_by_officer_id, assigned_officer_id
 )
-SELECT 'CASE-2025-1002', 'CYBERCRIME', 'Federal High Court Annex', 6.46660000, 3.37220000,
+SELECT 'CRIME-2025/09', 'CYBERCRIME', 'Federal High Court Annex', 6.46660000, 3.37220000,
        '2025-09-15 14:40:00', 'Closed cybercrime case referred for sentencing.', 'REFERRED',
        g1.id, g1.id
 FROM officers g1
@@ -152,7 +152,7 @@ SELECT 'John', 'Doe', cr.id, '1990-05-15', 'MALE', 'NID-ICI-0001',
     'Unknown', '+880100000004', 'Witnesses place suspect at robbery scene.', 'WANTED', g2.id
 FROM crime_reports cr
 JOIN officers g2 ON g2.email = 'admin2@icicids.local'
-WHERE cr.case_number = 'CASE-2026-0001'
+WHERE cr.crime_datetime = '2026-04-20 19:40:00'
 ON DUPLICATE KEY UPDATE
     crime_report_id = VALUES(crime_report_id),
     reason_for_suspicion = VALUES(reason_for_suspicion),
@@ -167,7 +167,7 @@ SELECT 'Amaka', 'Nwosu', cr.id, '1988-11-22', 'FEMALE', 'NID-ICI-0002',
     '15 Unity Street', '+880100000005', 'Linked to cybercrime wallet infrastructure.', 'PERSON_OF_INTEREST', g2.id
 FROM crime_reports cr
 JOIN officers g2 ON g2.email = 'admin2@icicids.local'
-WHERE cr.case_number = 'CASE-2026-0002'
+WHERE cr.crime_datetime = '2026-04-18 10:10:00'
 ON DUPLICATE KEY UPDATE
     crime_report_id = VALUES(crime_report_id),
     reason_for_suspicion = VALUES(reason_for_suspicion),
@@ -182,7 +182,7 @@ SELECT 'Peter', 'Ibrahim', cr.id, '1995-03-04', 'MALE', 'NID-ICI-0003',
     '7 Market Road', '+880100000006', 'Present during assault and identified by CCTV.', 'ARRESTED', g2.id
 FROM crime_reports cr
 JOIN officers g2 ON g2.email = 'admin2@icicids.local'
-WHERE cr.case_number = 'CASE-2026-0003'
+WHERE cr.crime_datetime = '2026-04-16 22:15:00'
 ON DUPLICATE KEY UPDATE
     crime_report_id = VALUES(crime_report_id),
     reason_for_suspicion = VALUES(reason_for_suspicion),
@@ -197,7 +197,7 @@ SELECT 'Lillian', 'Okoro', cr.id, '1998-02-19', 'FEMALE', 'NID-ICI-0004',
     '23 Bay View', '+880100000007', 'Identified near kidnapping scene; vehicle matched witness report.', 'PERSON_OF_INTEREST', g2.id
 FROM crime_reports cr
 JOIN officers g2 ON g2.email = 'admin2@icicids.local'
-WHERE cr.case_number = 'CASE-2026-0006'
+WHERE cr.crime_datetime = '2026-04-10 21:05:00'
 ON DUPLICATE KEY UPDATE
     crime_report_id = VALUES(crime_report_id),
     reason_for_suspicion = VALUES(reason_for_suspicion),
@@ -210,7 +210,7 @@ SELECT cr.id, s.id, 'PRIMARY', 'Primary suspect for armed robbery.', g2.id
 FROM crime_reports cr
 JOIN suspects s ON s.national_id = 'NID-ICI-0001'
 JOIN officers g2 ON g2.email = 'admin2@icicids.local'
-WHERE cr.case_number = 'CASE-2026-0001'
+WHERE cr.crime_datetime = '2026-04-20 19:40:00'
 ON DUPLICATE KEY UPDATE
     relation_type = VALUES(relation_type),
     notes = VALUES(notes),
@@ -221,199 +221,215 @@ SELECT cr.id, s.id, 'PRIMARY', 'Person of interest in cybercrime case.', g2.id
 FROM crime_reports cr
 JOIN suspects s ON s.national_id = 'NID-ICI-0002'
 JOIN officers g2 ON g2.email = 'admin2@icicids.local'
-WHERE cr.case_number = 'CASE-2026-0002'
+WHERE cr.crime_datetime = '2026-04-18 10:10:00'
 ON DUPLICATE KEY UPDATE
     relation_type = VALUES(relation_type),
     notes = VALUES(notes),
     linked_by_officer_id = VALUES(linked_by_officer_id);
 
+-- Bulk demo dataset (compat mode: numbers-table instead of CTE)
+
+-- Bulk demo crime_reports (1..120)
+INSERT INTO crime_reports (
+    case_number, crime_type, location_text, latitude, longitude,
+    crime_datetime, description, investigation_status, reported_by_officer_id, assigned_officer_id
+)
+SELECT
+    CONCAT('CRIME-', DATE_FORMAT(DATE_ADD('2026-01-01 08:00:00', INTERVAL seq.n DAY), '%Y/%m')),
+    CASE MOD(seq.n, 6)
+        WHEN 0 THEN 'ROBBERY'
+        WHEN 1 THEN 'CYBERCRIME'
+        WHEN 2 THEN 'BURGLARY'
+        WHEN 3 THEN 'ASSAULT'
+        WHEN 4 THEN 'THEFT'
+        ELSE 'KIDNAPPING'
+    END,
+    CONCAT('Demo Sector ', LPAD(seq.n, 3, '0')),
+    6.400000 + (seq.n / 1000),
+    3.300000 + (seq.n / 1000),
+    DATE_ADD('2026-01-01 08:00:00', INTERVAL seq.n DAY),
+    CONCAT('Auto-generated demo report #', seq.n, '.'),
+    CASE
+        WHEN MOD(seq.n, 12) = 0 THEN 'REFERRED'
+        WHEN MOD(seq.n, 10) = 0 THEN 'CLOSED'
+        WHEN MOD(seq.n, 4) = 0 THEN 'SUSPENDED'
+        WHEN MOD(seq.n, 3) = 0 THEN 'UNDER_INVESTIGATION'
+        ELSE 'OPEN'
+    END,
+    g1.id, g2.id
+FROM (
+    SELECT units.n + tens.n * 10 + hundreds.n * 100 AS n
+    FROM (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) units
+    CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) tens
+    CROSS JOIN (SELECT 0 n UNION ALL SELECT 1) hundreds
+    ) seq
+JOIN officers g1 ON g1.email = 'admin@icicids.local'
+JOIN officers g2 ON g2.email = 'admin2@icicids.local'
+WHERE seq.n BETWEEN 1 AND 120
+  AND NOT EXISTS (
+    SELECT 1 FROM crime_reports existing
+    WHERE existing.location_text = CONCAT('Demo Sector ', LPAD(seq.n, 3, '0'))
+);
+
+-- Suspects for demo crime reports
+INSERT INTO suspects (
+    first_name, last_name, crime_report_id, date_of_birth, gender, national_id,
+    address_line, phone, reason_for_suspicion, suspect_status, created_by_officer_id
+)
+SELECT
+    CONCAT('Demo', seq.n),
+    CONCAT('Subject', seq.n),
+    cr.id,
+    DATE_SUB('1995-01-01', INTERVAL seq.n DAY),
+    CASE WHEN MOD(seq.n, 2) = 0 THEN 'MALE' ELSE 'FEMALE' END,
+    CONCAT('NID-ICI-', LPAD(1000 + seq.n, 4, '0')),
+    CONCAT('Block ', LPAD(seq.n, 3, '0'), ', Demo City'),
+    CONCAT('+8801', LPAD(seq.n, 8, '0')),
+    CONCAT('Auto-generated suspect for demo case ', LPAD(seq.n, 3, '0')),
+    CASE
+        WHEN MOD(seq.n, 5) = 0 THEN 'ARRESTED'
+        WHEN MOD(seq.n, 4) = 0 THEN 'WANTED'
+        WHEN MOD(seq.n, 3) = 0 THEN 'CLEARED'
+        ELSE 'PERSON_OF_INTEREST'
+    END,
+    g2.id
+FROM (
+    SELECT units.n + tens.n * 10 + hundreds.n * 100 AS n
+    FROM (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) units
+    CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) tens
+    CROSS JOIN (SELECT 0 n UNION ALL SELECT 1) hundreds
+    ) seq
+JOIN crime_reports cr ON cr.location_text = CONCAT('Demo Sector ', LPAD(seq.n, 3, '0'))
+JOIN officers g2 ON g2.email = 'admin2@icicids.local'
+WHERE seq.n BETWEEN 1 AND 120
+ON DUPLICATE KEY UPDATE
+    crime_report_id = VALUES(crime_report_id),
+    reason_for_suspicion = VALUES(reason_for_suspicion),
+    suspect_status = VALUES(suspect_status),
+    created_by_officer_id = VALUES(created_by_officer_id);
+
+-- Auto-link suspects to their reports
 INSERT INTO crime_report_suspects (crime_report_id, suspect_id, relation_type, notes, linked_by_officer_id)
-SELECT cr.id, s.id, 'PRIMARY', 'Assault case suspect currently arrested.', g2.id
-FROM crime_reports cr
-JOIN suspects s ON s.national_id = 'NID-ICI-0003'
+SELECT cr.id, s.id, 'PRIMARY', 'Auto-linked demo suspect.', g2.id
+FROM suspects s
+JOIN crime_reports cr ON cr.id = s.crime_report_id
 JOIN officers g2 ON g2.email = 'admin2@icicids.local'
-WHERE cr.case_number = 'CASE-2026-0003'
+WHERE s.national_id LIKE 'NID-ICI-1%'
 ON DUPLICATE KEY UPDATE
     relation_type = VALUES(relation_type),
     notes = VALUES(notes),
     linked_by_officer_id = VALUES(linked_by_officer_id);
 
-INSERT INTO crime_report_suspects (crime_report_id, suspect_id, relation_type, notes, linked_by_officer_id)
-SELECT cr.id, s.id, 'PRIMARY', 'Kidnapping case suspect; investigation ongoing.', g2.id
-FROM crime_reports cr
-JOIN suspects s ON s.national_id = 'NID-ICI-0004'
-JOIN officers g2 ON g2.email = 'admin2@icicids.local'
-WHERE cr.case_number = 'CASE-2026-0006'
-ON DUPLICATE KEY UPDATE
-    relation_type = VALUES(relation_type),
-    notes = VALUES(notes),
-    linked_by_officer_id = VALUES(linked_by_officer_id);
-
--- Criminals (confirmed)
-INSERT INTO criminals (suspect_id, crime_report_id, criminal_code, profile_summary, risk_level, current_status, added_by_officer_id)
-SELECT s.id, cr.id, 'CRIM-0001', 'Repeat violent offender tied to armed robbery ring.', 'HIGH', 'AT_LARGE', g1.id
-FROM suspects s
-JOIN crime_reports cr ON cr.case_number = 'CASE-2025-1001'
-JOIN officers g1 ON g1.email = 'admin@icicids.local'
-WHERE s.national_id = 'NID-ICI-0001'
-ON DUPLICATE KEY UPDATE
-    crime_report_id = VALUES(crime_report_id),
-    profile_summary = VALUES(profile_summary),
-    risk_level = VALUES(risk_level),
-    current_status = VALUES(current_status),
-    added_by_officer_id = VALUES(added_by_officer_id);
-
-INSERT INTO criminals (suspect_id, crime_report_id, criminal_code, profile_summary, risk_level, current_status, added_by_officer_id)
-SELECT s.id, cr.id, 'CRIM-0002', 'Digital fraud operator with cross-border activity markers.', 'MEDIUM', 'INCARCERATED', g1.id
-FROM suspects s
-JOIN crime_reports cr ON cr.case_number = 'CASE-2025-1002'
-JOIN officers g1 ON g1.email = 'admin@icicids.local'
-WHERE s.national_id = 'NID-ICI-0002'
-ON DUPLICATE KEY UPDATE
-    crime_report_id = VALUES(crime_report_id),
-    profile_summary = VALUES(profile_summary),
-    risk_level = VALUES(risk_level),
-    current_status = VALUES(current_status),
-    added_by_officer_id = VALUES(added_by_officer_id);
-
-INSERT INTO criminals (suspect_id, crime_report_id, criminal_code, profile_summary, risk_level, current_status, added_by_officer_id)
-SELECT s.id, cr.id, 'CRIM-0003', 'Assault conviction following Riverside Block C case closure.', 'LOW', 'PAROLE', g1.id
-FROM suspects s
-JOIN crime_reports cr ON cr.case_number = 'CASE-2026-0003'
-JOIN officers g1 ON g1.email = 'admin@icicids.local'
-WHERE s.national_id = 'NID-ICI-0003'
-ON DUPLICATE KEY UPDATE
-    crime_report_id = VALUES(crime_report_id),
-    profile_summary = VALUES(profile_summary),
-    risk_level = VALUES(risk_level),
-    current_status = VALUES(current_status),
-    added_by_officer_id = VALUES(added_by_officer_id);
-
--- Aliases
-INSERT INTO criminal_aliases (criminal_id, alias_name, alias_note)
-SELECT c.id, 'Ghost Walker', 'Used in robbery communications.'
-FROM criminals c WHERE c.criminal_code = 'CRIM-0001'
-ON DUPLICATE KEY UPDATE
-    alias_note = VALUES(alias_note);
-
-INSERT INTO criminal_aliases (criminal_id, alias_name, alias_note)
-SELECT c.id, 'Packet Queen', 'Online pseudonym in fraud channels.'
-FROM criminals c WHERE c.criminal_code = 'CRIM-0002'
-ON DUPLICATE KEY UPDATE
-    alias_note = VALUES(alias_note);
-
--- Criminal history
-INSERT INTO criminal_history (
-    criminal_id, crime_report_id, offense_title, conviction_date,
-    sentence_details, jurisdiction, notes, created_by_officer_id
-)
-SELECT c.id, cr.id, 'Armed Robbery', '2025-12-12',
-       'Pending sentencing hearing.', 'Lagos State', 'Case reopened due to new witness account.', g1.id
-FROM criminals c
-JOIN crime_reports cr ON cr.case_number = 'CASE-2025-1001'
-JOIN officers g1 ON g1.email = 'admin@icicids.local'
-WHERE c.criminal_code = 'CRIM-0001';
-
-INSERT INTO criminal_history (
-    criminal_id, crime_report_id, offense_title, conviction_date,
-    sentence_details, jurisdiction, notes, created_by_officer_id
-)
-SELECT c.id, cr.id, 'Financial Cyber Fraud', '2026-01-30',
-       '3-year sentence, cybercrime unit custody.', 'Federal High Court', 'Digital wallet tracing confirmed chain.', g1.id
-FROM criminals c
-JOIN crime_reports cr ON cr.case_number = 'CASE-2025-1002'
-JOIN officers g1 ON g1.email = 'admin@icicids.local'
-WHERE c.criminal_code = 'CRIM-0002';
-
-INSERT INTO criminal_history (
-    criminal_id, crime_report_id, offense_title, conviction_date,
-    sentence_details, jurisdiction, notes, created_by_officer_id
-)
-SELECT c.id, cr.id, 'Aggravated Assault', '2026-04-25',
-       '18-month sentence with parole conditions.', 'Lagos State', 'Case closed after plea agreement.', g1.id
-FROM criminals c
-JOIN crime_reports cr ON cr.case_number = 'CASE-2026-0003'
-JOIN officers g1 ON g1.email = 'admin@icicids.local'
-WHERE c.criminal_code = 'CRIM-0003';
-
--- Evidence
+-- Evidence for demo cases
 INSERT INTO evidence (
     evidence_code, crime_report_id, evidence_type, title, description, file_path,
     collected_at, collected_by_officer_id, storage_location, chain_status, integrity_hash
 )
-SELECT 'EVD-0001', cr.id, 'DIGITAL_FILE', 'Store CCTV Archive', 'Raw CCTV footage around robbery window.', '/evidence/cctv/evd-0001.mp4',
-       '2026-04-20 20:10:00', g2.id, 'Digital Vault', 'IN_STORAGE', SHA2('EVD-0001', 256)
-FROM crime_reports cr
+SELECT
+    CONCAT('EVD-1', LPAD(seq.n, 4, '0')),
+    cr.id,
+    CASE MOD(seq.n, 6)
+        WHEN 0 THEN 'DIGITAL_FILE'
+        WHEN 1 THEN 'DOCUMENT'
+        WHEN 2 THEN 'WEAPON'
+        WHEN 3 THEN 'FINGERPRINT'
+        WHEN 4 THEN 'BIOLOGICAL'
+        ELSE 'VIDEO'
+    END,
+    CONCAT('Demo Evidence ', LPAD(seq.n, 3, '0')),
+    CONCAT('Auto-generated evidence for demo case ', LPAD(seq.n, 3, '0')),
+    CONCAT('/evidence/demo/evd-', LPAD(seq.n, 4, '0'), '.dat'),
+    DATE_ADD('2026-01-01 10:00:00', INTERVAL seq.n DAY),
+    g2.id,
+    CONCAT('Storage Bin ', LPAD(seq.n, 3, '0')),
+    CASE
+        WHEN MOD(seq.n, 5) = 0 THEN 'IN_COURT'
+        WHEN MOD(seq.n, 4) = 0 THEN 'IN_STORAGE'
+        WHEN MOD(seq.n, 3) = 0 THEN 'IN_LAB'
+        ELSE 'COLLECTED'
+    END,
+    SHA2(CONCAT('EVD-1', LPAD(seq.n, 4, '0')), 256)
+FROM (
+    SELECT units.n + tens.n * 10 + hundreds.n * 100 AS n
+    FROM (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) units
+    CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) tens
+    CROSS JOIN (SELECT 0 n UNION ALL SELECT 1) hundreds
+    ) seq
+JOIN crime_reports cr ON cr.location_text = CONCAT('Demo Sector ', LPAD(seq.n, 3, '0'))
 JOIN officers g2 ON g2.email = 'admin2@icicids.local'
-WHERE cr.case_number = 'CASE-2026-0001'
+WHERE seq.n BETWEEN 1 AND 120
 ON DUPLICATE KEY UPDATE
     crime_report_id = VALUES(crime_report_id),
     description = VALUES(description),
     chain_status = VALUES(chain_status),
     integrity_hash = VALUES(integrity_hash);
 
-INSERT INTO evidence (
-    evidence_code, crime_report_id, evidence_type, title, description, file_path,
-    collected_at, collected_by_officer_id, storage_location, chain_status, integrity_hash
-)
-SELECT 'EVD-0002', cr.id, 'DOCUMENT', 'Transaction Ledger Printout', 'Printed ledger from seized office terminal.', '/evidence/docs/evd-0002.pdf',
-       '2026-04-18 13:00:00', g2.id, 'Records Room B', 'IN_LAB', SHA2('EVD-0002', 256)
-FROM crime_reports cr
-JOIN officers g2 ON g2.email = 'admin2@icicids.local'
-WHERE cr.case_number = 'CASE-2026-0002'
-ON DUPLICATE KEY UPDATE
-    crime_report_id = VALUES(crime_report_id),
-    description = VALUES(description),
-    chain_status = VALUES(chain_status),
-    integrity_hash = VALUES(integrity_hash);
-
-INSERT INTO evidence (
-    evidence_code, crime_report_id, evidence_type, title, description, file_path,
-    collected_at, collected_by_officer_id, storage_location, chain_status, integrity_hash
-)
-SELECT 'EVD-0003', cr.id, 'WEAPON', 'Recovered Knife', 'Knife recovered near assault location.', '/evidence/weapons/evd-0003.jpg',
-       '2026-04-16 23:00:00', g2.id, 'Locker 12', 'IN_COURT', SHA2('EVD-0003', 256)
-FROM crime_reports cr
-JOIN officers g2 ON g2.email = 'admin2@icicids.local'
-WHERE cr.case_number = 'CASE-2026-0003'
-ON DUPLICATE KEY UPDATE
-    crime_report_id = VALUES(crime_report_id),
-    description = VALUES(description),
-    chain_status = VALUES(chain_status),
-    integrity_hash = VALUES(integrity_hash);
-
-INSERT INTO evidence (
-    evidence_code, crime_report_id, evidence_type, title, description, file_path,
-    collected_at, collected_by_officer_id, storage_location, chain_status, integrity_hash
-)
-SELECT 'EVD-0004', cr.id, 'FINGERPRINT', 'Door Handle Prints', 'Latent prints lifted from burglary entry point.', '/evidence/prints/evd-0004.png',
-       '2026-04-12 02:40:00', g2.id, 'Lab Intake', 'IN_LAB', SHA2('EVD-0004', 256)
-FROM crime_reports cr
-JOIN officers g2 ON g2.email = 'admin2@icicids.local'
-WHERE cr.case_number = 'CASE-2026-0005'
-ON DUPLICATE KEY UPDATE
-    crime_report_id = VALUES(crime_report_id),
-    description = VALUES(description),
-    chain_status = VALUES(chain_status),
-    integrity_hash = VALUES(integrity_hash);
-
--- Link evidence to reports
+-- Auto-link evidence to reports and suspects
 INSERT INTO crime_report_evidence (crime_report_id, evidence_id, linked_by_officer_id, relation_note)
-SELECT cr.id, e.id, g2.id, 'Video confirms suspect route and timeline.'
-FROM crime_reports cr
-JOIN evidence e ON e.evidence_code = 'EVD-0001'
+SELECT cr.id, e.id, g2.id, 'Auto-linked demo evidence.'
+FROM evidence e
+JOIN crime_reports cr ON cr.id = e.crime_report_id
 JOIN officers g2 ON g2.email = 'admin2@icicids.local'
-WHERE cr.case_number = 'CASE-2026-0001'
+WHERE e.evidence_code LIKE 'EVD-1%'
+  AND NOT EXISTS (
+      SELECT 1 FROM crime_report_evidence cre
+      WHERE cre.crime_report_id = cr.id AND cre.evidence_id = e.id
+  );
+
+INSERT INTO suspect_evidence (suspect_id, evidence_id, relevance_reason, linked_by_officer_id)
+SELECT s.id, e.id, 'Auto-linked demo evidence to suspect.', g2.id
+FROM suspects s
+JOIN evidence e ON e.crime_report_id = s.crime_report_id
+JOIN officers g2 ON g2.email = 'admin2@icicids.local'
+WHERE s.national_id LIKE 'NID-ICI-1%'
+  AND NOT EXISTS (
+      SELECT 1 FROM suspect_evidence se
+      WHERE se.suspect_id = s.id AND se.evidence_id = e.id
+  );
+
+-- Criminals derived from some demo records
+INSERT INTO criminals (suspect_id, crime_report_id, criminal_code, profile_summary, risk_level, current_status, added_by_officer_id)
+SELECT
+    s.id,
+    cr.id,
+    CONCAT('CRIM-', LPAD(2000 + seq.n, 4, '0')),
+    CONCAT('Demo criminal profile for suspect ', LPAD(seq.n, 3, '0')),
+    CASE
+        WHEN MOD(seq.n, 4) = 0 THEN 'HIGH'
+        WHEN MOD(seq.n, 3) = 0 THEN 'MEDIUM'
+        ELSE 'LOW'
+    END,
+    CASE
+        WHEN MOD(seq.n, 5) = 0 THEN 'PAROLE'
+        WHEN MOD(seq.n, 3) = 0 THEN 'INCARCERATED'
+        ELSE 'AT_LARGE'
+    END,
+    g1.id
+FROM (
+    SELECT units.n + tens.n * 10 + hundreds.n * 100 AS n
+    FROM (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) units
+    CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) tens
+    CROSS JOIN (SELECT 0 n UNION ALL SELECT 1) hundreds
+    ) seq
+JOIN crime_reports cr ON cr.location_text = CONCAT('Demo Sector ', LPAD(seq.n, 3, '0'))
+JOIN suspects s ON s.crime_report_id = cr.id
+JOIN officers g1 ON g1.email = 'admin@icicids.local'
+WHERE seq.n BETWEEN 1 AND 120
+  AND cr.investigation_status IN ('CLOSED', 'REFERRED')
+  AND MOD(seq.n, 4) = 0
 ON DUPLICATE KEY UPDATE
-    relation_note = VALUES(relation_note),
-    linked_by_officer_id = VALUES(linked_by_officer_id);
+    crime_report_id = VALUES(crime_report_id),
+    profile_summary = VALUES(profile_summary),
+    risk_level = VALUES(risk_level),
+    current_status = VALUES(current_status),
+    added_by_officer_id = VALUES(added_by_officer_id);
 
 INSERT INTO crime_report_evidence (crime_report_id, evidence_id, linked_by_officer_id, relation_note)
 SELECT cr.id, e.id, g2.id, 'Ledger ties suspects to laundering path.'
 FROM crime_reports cr
 JOIN evidence e ON e.evidence_code = 'EVD-0002'
 JOIN officers g2 ON g2.email = 'admin2@icicids.local'
-WHERE cr.case_number = 'CASE-2026-0002'
+WHERE cr.crime_datetime = '2026-04-18 10:10:00'
 ON DUPLICATE KEY UPDATE
     relation_note = VALUES(relation_note),
     linked_by_officer_id = VALUES(linked_by_officer_id);
@@ -423,7 +439,7 @@ SELECT cr.id, e.id, g2.id, 'Weapon matched witness account and medical report.'
 FROM crime_reports cr
 JOIN evidence e ON e.evidence_code = 'EVD-0003'
 JOIN officers g2 ON g2.email = 'admin2@icicids.local'
-WHERE cr.case_number = 'CASE-2026-0003'
+WHERE cr.crime_datetime = '2026-04-16 22:15:00'
 ON DUPLICATE KEY UPDATE
     relation_note = VALUES(relation_note),
     linked_by_officer_id = VALUES(linked_by_officer_id);
@@ -433,7 +449,7 @@ SELECT cr.id, e.id, g2.id, 'Prints lifted from entry point; suspect unknown.'
 FROM crime_reports cr
 JOIN evidence e ON e.evidence_code = 'EVD-0004'
 JOIN officers g2 ON g2.email = 'admin2@icicids.local'
-WHERE cr.case_number = 'CASE-2026-0005'
+WHERE cr.crime_datetime = '2026-04-12 02:10:00'
 ON DUPLICATE KEY UPDATE
     relation_note = VALUES(relation_note),
     linked_by_officer_id = VALUES(linked_by_officer_id);
@@ -474,19 +490,19 @@ INSERT INTO investigation_updates (crime_report_id, update_type, progress_percen
 SELECT cr.id, 'NOTE', 40, 'Initial witnesses interviewed and CCTV evidence ingested.', g2.id
 FROM crime_reports cr
 JOIN officers g2 ON g2.email = 'admin2@icicids.local'
-WHERE cr.case_number = 'CASE-2026-0001';
+WHERE cr.crime_datetime = '2026-04-20 19:40:00';
 
 INSERT INTO investigation_updates (crime_report_id, update_type, progress_percent, note_text, created_by_officer_id)
 SELECT cr.id, 'FORENSIC_RESULT', 60, 'Forensic team validated metadata integrity of seized devices.', g2.id
 FROM crime_reports cr
 JOIN officers g2 ON g2.email = 'admin2@icicids.local'
-WHERE cr.case_number = 'CASE-2026-0002';
+WHERE cr.crime_datetime = '2026-04-18 10:10:00';
 
 INSERT INTO investigation_updates (crime_report_id, update_type, progress_percent, note_text, created_by_officer_id)
 SELECT cr.id, 'STATUS_CHANGE', 100, 'Case concluded and transferred for court filing.', g2.id
 FROM crime_reports cr
 JOIN officers g2 ON g2.email = 'admin2@icicids.local'
-WHERE cr.case_number = 'CASE-2026-0003';
+WHERE cr.crime_datetime = '2026-04-16 22:15:00';
 
 -- Interviews
 INSERT INTO interviews (
@@ -498,7 +514,7 @@ SELECT cr.id, s.id, 'John Doe', 'SUSPECT', '2026-04-21 09:30:00',
 FROM crime_reports cr
 JOIN suspects s ON s.national_id = 'NID-ICI-0001'
 JOIN officers g2 ON g2.email = 'admin2@icicids.local'
-WHERE cr.case_number = 'CASE-2026-0001';
+WHERE cr.crime_datetime = '2026-04-20 19:40:00';
 
 INSERT INTO interviews (
     crime_report_id, suspect_id, interviewee_name, interviewee_role,
@@ -508,7 +524,7 @@ SELECT cr.id, NULL, 'Ifeoma U.', 'WITNESS', '2026-04-18 15:10:00',
        'Witness provided timeline of suspicious transactions and contact patterns.', g2.id
 FROM crime_reports cr
 JOIN officers g2 ON g2.email = 'admin2@icicids.local'
-WHERE cr.case_number = 'CASE-2026-0002';
+WHERE cr.crime_datetime = '2026-04-18 10:10:00';
 
 INSERT INTO interviews (
     crime_report_id, suspect_id, interviewee_name, interviewee_role,
@@ -519,7 +535,7 @@ SELECT cr.id, s.id, 'Peter Ibrahim', 'SUSPECT', '2026-04-17 11:20:00',
 FROM crime_reports cr
 JOIN suspects s ON s.national_id = 'NID-ICI-0003'
 JOIN officers g2 ON g2.email = 'admin2@icicids.local'
-WHERE cr.case_number = 'CASE-2026-0003';
+WHERE cr.crime_datetime = '2026-04-16 22:15:00';
 
 -- Schema requests (from Grade 2)
 INSERT INTO schema_requests (
@@ -609,7 +625,7 @@ INSERT INTO officer_activity (
 SELECT g1.id, 'CREATE', 'crime_reports', cr.id, 'Created demo robbery case.',
        '127.0.0.1', 'Local Development', 'Seeder/1.0', NOW() - INTERVAL 3 DAY
 FROM officers g1
-JOIN crime_reports cr ON cr.case_number = 'CASE-2026-0001'
+JOIN crime_reports cr ON cr.crime_datetime = '2026-04-20 19:40:00'
 WHERE g1.email = 'admin@icicids.local';
 
 INSERT INTO officer_activity (
@@ -631,6 +647,222 @@ SELECT g2.id, 'EVIDENCE_UPLOAD', 'evidence', e.id, 'Uploaded CCTV extract and ch
 FROM officers g2
 JOIN evidence e ON e.evidence_code = 'EVD-0001'
 WHERE g2.email = 'admin2@icicids.local';
+
+-- Bulk demo dataset (120 additional crimes, suspects, evidence, and criminals)
+-- Bulk demo crime_reports (1..120)
+INSERT INTO crime_reports (
+    case_number, crime_type, location_text, latitude, longitude,
+    crime_datetime, description, investigation_status, reported_by_officer_id, assigned_officer_id
+)
+SELECT
+    CONCAT('CRIME-', DATE_FORMAT(DATE_ADD('2026-01-01 08:00:00', INTERVAL seq.n DAY), '%Y/%m')),
+    CASE MOD(seq.n, 6)
+        WHEN 0 THEN 'ROBBERY'
+        WHEN 1 THEN 'CYBERCRIME'
+        WHEN 2 THEN 'BURGLARY'
+        WHEN 3 THEN 'ASSAULT'
+        WHEN 4 THEN 'THEFT'
+        ELSE 'KIDNAPPING'
+    END,
+    CONCAT('Demo Sector ', LPAD(seq.n, 3, '0')),
+    6.400000 + (seq.n / 1000),
+    3.300000 + (seq.n / 1000),
+    DATE_ADD('2026-01-01 08:00:00', INTERVAL seq.n DAY),
+    CONCAT('Auto-generated demo report #', seq.n, '.'),
+    CASE
+        WHEN MOD(seq.n, 12) = 0 THEN 'REFERRED'
+        WHEN MOD(seq.n, 10) = 0 THEN 'CLOSED'
+        WHEN MOD(seq.n, 4) = 0 THEN 'SUSPENDED'
+        WHEN MOD(seq.n, 3) = 0 THEN 'UNDER_INVESTIGATION'
+        ELSE 'OPEN'
+    END,
+    g1.id, g2.id
+FROM (
+    SELECT units.n + tens.n * 10 + hundreds.n * 100 AS n
+    FROM (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) units
+    CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) tens
+    CROSS JOIN (SELECT 0 n UNION ALL SELECT 1) hundreds
+    ) seq
+JOIN officers g1 ON g1.email = 'admin@icicids.local'
+JOIN officers g2 ON g2.email = 'admin2@icicids.local'
+WHERE seq.n BETWEEN 1 AND 120
+  AND NOT EXISTS (
+    SELECT 1 FROM crime_reports existing
+    WHERE existing.location_text = CONCAT('Demo Sector ', LPAD(seq.n, 3, '0'))
+);
+
+-- Suspects for demo crime reports
+INSERT INTO suspects (
+    first_name, last_name, crime_report_id, date_of_birth, gender, national_id,
+    address_line, phone, reason_for_suspicion, suspect_status, created_by_officer_id
+)
+SELECT
+    CONCAT('Demo', seq.n),
+    CONCAT('Subject', seq.n),
+    cr.id,
+    DATE_SUB('1995-01-01', INTERVAL seq.n DAY),
+    CASE WHEN MOD(seq.n, 2) = 0 THEN 'MALE' ELSE 'FEMALE' END,
+    CONCAT('NID-ICI-', LPAD(1000 + seq.n, 4, '0')),
+    CONCAT('Block ', LPAD(seq.n, 3, '0'), ', Demo City'),
+    CONCAT('+8801', LPAD(seq.n, 8, '0')),
+    CONCAT('Auto-generated suspect for demo case ', LPAD(seq.n, 3, '0')),
+    CASE
+        WHEN MOD(seq.n, 5) = 0 THEN 'ARRESTED'
+        WHEN MOD(seq.n, 4) = 0 THEN 'WANTED'
+        WHEN MOD(seq.n, 3) = 0 THEN 'CLEARED'
+        ELSE 'PERSON_OF_INTEREST'
+    END,
+    g2.id
+FROM (
+    SELECT units.n + tens.n * 10 + hundreds.n * 100 AS n
+    FROM (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) units
+    CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) tens
+    CROSS JOIN (SELECT 0 n UNION ALL SELECT 1) hundreds
+    ) seq
+JOIN crime_reports cr ON cr.location_text = CONCAT('Demo Sector ', LPAD(seq.n, 3, '0'))
+JOIN officers g2 ON g2.email = 'admin2@icicids.local'
+WHERE seq.n BETWEEN 1 AND 120
+ON DUPLICATE KEY UPDATE
+    crime_report_id = VALUES(crime_report_id),
+    reason_for_suspicion = VALUES(reason_for_suspicion),
+    suspect_status = VALUES(suspect_status),
+    created_by_officer_id = VALUES(created_by_officer_id);
+
+-- Auto-link suspects to their reports
+INSERT INTO crime_report_suspects (crime_report_id, suspect_id, relation_type, notes, linked_by_officer_id)
+SELECT cr.id, s.id, 'PRIMARY', 'Auto-linked demo suspect.', g2.id
+FROM suspects s
+JOIN crime_reports cr ON cr.id = s.crime_report_id
+JOIN officers g2 ON g2.email = 'admin2@icicids.local'
+WHERE s.national_id LIKE 'NID-ICI-1%'
+ON DUPLICATE KEY UPDATE
+    relation_type = VALUES(relation_type),
+    notes = VALUES(notes),
+    linked_by_officer_id = VALUES(linked_by_officer_id);
+
+-- Evidence for demo cases
+INSERT INTO evidence (
+    evidence_code, crime_report_id, evidence_type, title, description, file_path,
+    collected_at, collected_by_officer_id, storage_location, chain_status, integrity_hash
+)
+SELECT
+    CONCAT('EVD-1', LPAD(seq.n, 4, '0')),
+    cr.id,
+    CASE MOD(seq.n, 6)
+        WHEN 0 THEN 'DIGITAL_FILE'
+        WHEN 1 THEN 'DOCUMENT'
+        WHEN 2 THEN 'WEAPON'
+        WHEN 3 THEN 'FINGERPRINT'
+        WHEN 4 THEN 'BIOLOGICAL'
+        ELSE 'VIDEO'
+    END,
+    CONCAT('Demo Evidence ', LPAD(seq.n, 3, '0')),
+    CONCAT('Auto-generated evidence for demo case ', LPAD(seq.n, 3, '0')),
+    CONCAT('/evidence/demo/evd-', LPAD(seq.n, 4, '0'), '.dat'),
+    DATE_ADD('2026-01-01 10:00:00', INTERVAL seq.n DAY),
+    g2.id,
+    CONCAT('Storage Bin ', LPAD(seq.n, 3, '0')),
+    CASE
+        WHEN MOD(seq.n, 5) = 0 THEN 'IN_COURT'
+        WHEN MOD(seq.n, 4) = 0 THEN 'IN_STORAGE'
+        WHEN MOD(seq.n, 3) = 0 THEN 'IN_LAB'
+        ELSE 'COLLECTED'
+    END,
+    SHA2(CONCAT('EVD-1', LPAD(seq.n, 4, '0')), 256)
+FROM (
+    SELECT units.n + tens.n * 10 + hundreds.n * 100 AS n
+    FROM (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) units
+    CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) tens
+    CROSS JOIN (SELECT 0 n UNION ALL SELECT 1) hundreds
+    ) seq
+JOIN crime_reports cr ON cr.location_text = CONCAT('Demo Sector ', LPAD(seq.n, 3, '0'))
+JOIN officers g2 ON g2.email = 'admin2@icicids.local'
+WHERE seq.n BETWEEN 1 AND 120
+ON DUPLICATE KEY UPDATE
+    crime_report_id = VALUES(crime_report_id),
+    description = VALUES(description),
+    chain_status = VALUES(chain_status),
+    integrity_hash = VALUES(integrity_hash);
+
+-- Auto-link evidence to reports and suspects
+INSERT INTO crime_report_evidence (crime_report_id, evidence_id, linked_by_officer_id, relation_note)
+SELECT cr.id, e.id, g2.id, 'Auto-linked demo evidence.'
+FROM evidence e
+JOIN crime_reports cr ON cr.id = e.crime_report_id
+JOIN officers g2 ON g2.email = 'admin2@icicids.local'
+WHERE e.evidence_code LIKE 'EVD-1%'
+  AND NOT EXISTS (
+      SELECT 1 FROM crime_report_evidence cre
+      WHERE cre.crime_report_id = cr.id AND cre.evidence_id = e.id
+  );
+
+INSERT INTO suspect_evidence (suspect_id, evidence_id, relevance_reason, linked_by_officer_id)
+SELECT s.id, e.id, 'Auto-linked demo evidence to suspect.', g2.id
+FROM suspects s
+JOIN evidence e ON e.crime_report_id = s.crime_report_id
+JOIN officers g2 ON g2.email = 'admin2@icicids.local'
+WHERE s.national_id LIKE 'NID-ICI-1%'
+  AND NOT EXISTS (
+      SELECT 1 FROM suspect_evidence se
+      WHERE se.suspect_id = s.id AND se.evidence_id = e.id
+  );
+
+-- Criminals derived from some demo records
+INSERT INTO criminals (suspect_id, crime_report_id, criminal_code, profile_summary, risk_level, current_status, added_by_officer_id)
+SELECT
+    s.id,
+    cr.id,
+    CONCAT('CRIM-', LPAD(2000 + seq.n, 4, '0')),
+    CONCAT('Demo criminal profile for suspect ', LPAD(seq.n, 3, '0')),
+    CASE
+        WHEN MOD(seq.n, 4) = 0 THEN 'HIGH'
+        WHEN MOD(seq.n, 3) = 0 THEN 'MEDIUM'
+        ELSE 'LOW'
+    END,
+    CASE
+        WHEN MOD(seq.n, 5) = 0 THEN 'PAROLE'
+        WHEN MOD(seq.n, 3) = 0 THEN 'INCARCERATED'
+        ELSE 'AT_LARGE'
+    END,
+    g1.id
+FROM (
+    SELECT units.n + tens.n * 10 + hundreds.n * 100 AS n
+    FROM (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) units
+    CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) tens
+    CROSS JOIN (SELECT 0 n UNION ALL SELECT 1) hundreds
+    ) seq
+JOIN crime_reports cr ON cr.location_text = CONCAT('Demo Sector ', LPAD(seq.n, 3, '0'))
+JOIN suspects s ON s.crime_report_id = cr.id
+JOIN officers g1 ON g1.email = 'admin@icicids.local'
+WHERE seq.n BETWEEN 1 AND 120
+  AND cr.investigation_status IN ('CLOSED', 'REFERRED')
+  AND MOD(seq.n, 4) = 0
+ON DUPLICATE KEY UPDATE
+    crime_report_id = VALUES(crime_report_id),
+    profile_summary = VALUES(profile_summary),
+    risk_level = VALUES(risk_level),
+    current_status = VALUES(current_status),
+    added_by_officer_id = VALUES(added_by_officer_id);
+
+INSERT INTO criminal_history (
+    criminal_id, crime_report_id, offense_title, conviction_date,
+    sentence_details, jurisdiction, notes, created_by_officer_id
+)
+SELECT c.id, cr.id,
+       CONCAT('Demo Offense ', LPAD(c.id, 3, '0')),
+       DATE(cr.crime_datetime),
+       'Demo sentencing details.',
+       'Demo Court',
+       'Auto-generated criminal history entry.',
+       g1.id
+FROM criminals c
+JOIN crime_reports cr ON cr.id = c.crime_report_id
+JOIN officers g1 ON g1.email = 'admin@icicids.local'
+WHERE c.criminal_code LIKE 'CRIM-2%'
+  AND NOT EXISTS (
+      SELECT 1 FROM criminal_history ch
+      WHERE ch.criminal_id = c.id AND ch.crime_report_id = cr.id
+  );
 
 SET foreign_key_checks = 1;
 

@@ -25,13 +25,8 @@ final class CrimeAndSuspectManager
 
     public function createCrimeReport(array $data): int
     {
-        // Validate CASE-YYYY-0001 format and ensure case year matches crime date year.
+        // Auto-generate crime name based on the crime date (CRIME-YYYY/MM).
         $this->auth->enforce('CREATE', 'crime_reports');
-
-        $caseNumber = strtoupper(trim((string)($data['case_number'] ?? '')));
-        if ($caseNumber === '' || !preg_match('/^CASE-\d{4}-\d{4}$/', $caseNumber)) {
-            throw new RuntimeException('Invalid case number. Use CASE-YYYY-0001 format.');
-        }
 
         $crimeDatetime = trim((string)($data['crime_datetime'] ?? ''));
         if ($crimeDatetime === '') {
@@ -44,10 +39,7 @@ final class CrimeAndSuspectManager
             throw new RuntimeException('Invalid crime date/time format.');
         }
 
-        $caseYear = (int)substr($caseNumber, 5, 4);
-        if ((int)$crimeDate->format('Y') !== $caseYear) {
-            throw new RuntimeException('Case year must match crime date year.');
-        }
+        $caseNumber = 'CRIME-' . $crimeDate->format('Y') . '/' . $crimeDate->format('m');
 
         $officer = $this->auth->currentOfficer();
         if ($officer === null) {
@@ -160,6 +152,55 @@ final class CrimeAndSuspectManager
         $stmt = $this->db->prepare($sql);
         foreach ($params as $k => $v) {
             $stmt->bindValue(':' . $k, $v);
+        }
+        $stmt->bindValue(':limit', max(1, $limit), PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
+    public function listCrimeReportsFiltered(array $filters, int $limit = 200): array
+    {
+        $this->auth->enforce('READ', 'crime_reports');
+
+        $sql = 'SELECT * FROM crime_reports WHERE 1=1';
+        $params = [];
+
+        $query = trim((string)($filters['query'] ?? ''));
+        if ($query !== '') {
+            $sql .= ' AND (case_number LIKE :query OR crime_type LIKE :query OR location_text LIKE :query)';
+            $params['query'] = '%' . $query . '%';
+        }
+
+        $status = trim((string)($filters['status'] ?? ''));
+        if ($status !== '') {
+            $sql .= ' AND investigation_status = :status';
+            $params['status'] = strtoupper($status);
+        }
+
+        $type = trim((string)($filters['type'] ?? ''));
+        if ($type !== '') {
+            $sql .= ' AND crime_type LIKE :crime_type';
+            $params['crime_type'] = '%' . $type . '%';
+        }
+
+        $from = trim((string)($filters['from'] ?? ''));
+        if ($from !== '') {
+            $sql .= ' AND crime_datetime >= :from_date';
+            $params['from_date'] = $from . ' 00:00:00';
+        }
+
+        $to = trim((string)($filters['to'] ?? ''));
+        if ($to !== '') {
+            $sql .= ' AND crime_datetime <= :to_date';
+            $params['to_date'] = $to . ' 23:59:59';
+        }
+
+        $sql .= ' ORDER BY crime_datetime DESC LIMIT :limit';
+
+        $stmt = $this->db->prepare($sql);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue(':' . $key, $value);
         }
         $stmt->bindValue(':limit', max(1, $limit), PDO::PARAM_INT);
         $stmt->execute();

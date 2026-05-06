@@ -12,15 +12,17 @@ require_once __DIR__ . '/Auth.php';
 require_once __DIR__ . '/AuditLogger.php';
 require_once __DIR__ . '/CrimeAndSuspectManager.php';
 require_once __DIR__ . '/EvidenceAndInvestigation.php';
+require_once __DIR__ . '/OfficerApplicationManager.php';
 
 $db = Database::getInstance()->getConnection();
 $auth = new Auth($db);
 $audit = new AuditLogger($db, $auth);
 $crimeManager = new CrimeAndSuspectManager($db, $auth, $audit);
 $evidenceManager = new EvidenceAndInvestigation($db, $auth, $audit);
+$officerApplications = new OfficerApplicationManager($db, $auth, $audit);
 
 $view = isset($_GET['view']) ? (string)$_GET['view'] : 'dashboard';
-$validViews = ['dashboard', 'crimes', 'suspects', 'criminals', 'evidence', 'feedbacks', 'schema', 'logs'];
+$validViews = ['dashboard', 'crimes', 'suspects', 'criminals', 'evidence', 'feedbacks', 'schema', 'logs', 'signup', 'approvals'];
 if (!in_array($view, $validViews, true)) {
     $view = 'dashboard';
 }
@@ -71,6 +73,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
+        if ($action === 'signup') {
+            $officerApplications->submitApplication([
+                'first_name' => trim((string)($_POST['first_name'] ?? '')),
+                'last_name' => trim((string)($_POST['last_name'] ?? '')),
+                'email' => trim((string)($_POST['email'] ?? '')),
+                'badge_number' => trim((string)($_POST['badge_number'] ?? '')),
+                'phone' => trim((string)($_POST['phone'] ?? '')),
+                'requested_rank' => trim((string)($_POST['requested_rank'] ?? Auth::ROLE_GRADE_3)),
+                'password' => (string)($_POST['password'] ?? ''),
+                'confirm_password' => (string)($_POST['confirm_password'] ?? ''),
+            ]);
+
+            flashSet('success', 'Signup request submitted. A Grade 1 officer will review it soon.');
+            header('Location: index.php?view=signup');
+            exit;
+        }
+
         $auth->requireAuthentication();
 
         if ($action === 'create_crime') {
@@ -82,7 +101,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $crimeManager->createCrimeReport([
-                'case_number' => trim((string)($_POST['case_number'] ?? '')),
                 'crime_type' => trim((string)($_POST['crime_type'] ?? '')),
                 'location_text' => trim((string)($_POST['location_text'] ?? '')),
                 'crime_datetime' => $crimeDate,
@@ -341,6 +359,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
+        if ($action === 'approve_officer') {
+            $officerApplications->approveApplication(
+                (int)($_POST['application_id'] ?? 0),
+                trim((string)($_POST['final_rank'] ?? Auth::ROLE_GRADE_3)),
+                trim((string)($_POST['review_note'] ?? ''))
+            );
+
+            flashSet('success', 'Officer application approved.');
+            header('Location: index.php?view=approvals');
+            exit;
+        }
+
+        if ($action === 'reject_officer') {
+            $officerApplications->rejectApplication(
+                (int)($_POST['application_id'] ?? 0),
+                trim((string)($_POST['review_note'] ?? ''))
+            );
+
+            flashSet('success', 'Officer application rejected.');
+            header('Location: index.php?view=approvals');
+            exit;
+        }
+
         flashSet('error', 'Unknown action.');
         header('Location: index.php');
         exit;
@@ -372,6 +413,29 @@ $selectedCrimeId = isset($_GET['crime_id']) ? max(0, (int)$_GET['crime_id']) : 0
 $selectedEvidenceId = isset($_GET['evidence_id']) ? max(0, (int)$_GET['evidence_id']) : 0;
 $selectedSuspectId = isset($_GET['suspect_id']) ? max(0, (int)$_GET['suspect_id']) : 0;
 $selectedCriminalId = isset($_GET['criminal_id']) ? max(0, (int)$_GET['criminal_id']) : 0;
+
+$crimeFilters = [
+    'query' => trim((string)($_GET['crime_q'] ?? '')),
+    'status' => trim((string)($_GET['crime_status'] ?? '')),
+    'type' => trim((string)($_GET['crime_type'] ?? '')),
+    'from' => trim((string)($_GET['crime_from'] ?? '')),
+    'to' => trim((string)($_GET['crime_to'] ?? '')),
+];
+$suspectFilters = [
+    'query' => trim((string)($_GET['suspect_q'] ?? '')),
+    'status' => trim((string)($_GET['suspect_status'] ?? '')),
+];
+$criminalFilters = [
+    'query' => trim((string)($_GET['criminal_q'] ?? '')),
+    'status' => trim((string)($_GET['criminal_status'] ?? '')),
+    'risk' => trim((string)($_GET['criminal_risk'] ?? '')),
+];
+$evidenceFilters = [
+    'query' => trim((string)($_GET['evidence_q'] ?? '')),
+    'status' => trim((string)($_GET['evidence_status'] ?? '')),
+    'type' => trim((string)($_GET['evidence_type'] ?? '')),
+];
+$applicationStatusFilter = trim((string)($_GET['application_status'] ?? 'PENDING'));
 
 function resolveImagePath(array $candidates): ?string
 {
@@ -408,6 +472,7 @@ $canDeleteEvidence = false;
 $canLinkEvidence = false;
 $canSubmitFeedback = false;
 $canSubmitSchema = false;
+$canReviewOfficers = false;
 
 $stats = ['officers' => 0, 'crime_reports' => 0, 'suspects' => 0, 'evidence' => 0, 'criminals' => 0];
 $crimeReports = [];
@@ -431,6 +496,7 @@ $feedbacks = [];
 $schemas = [];
 $activityLogs = [];
 $loginLogs = [];
+$applications = [];
 
 if ($isAuthed) {
     // Permission matrix for tabs, actions, and protected datasets.
@@ -458,6 +524,7 @@ if ($isAuthed) {
     $canLinkEvidence = $auth->can('CREATE', 'crime_report_evidence');
     $canSubmitFeedback = $auth->can('CREATE', 'feedbacks');
     $canSubmitSchema = $auth->can('CREATE', 'schema_requests');
+    $canReviewOfficers = $auth->can('READ', 'officer_applications');
 
     $viewAllowed = (
         ($view === 'dashboard')
@@ -468,6 +535,7 @@ if ($isAuthed) {
         || ($view === 'feedbacks' && $canReadFeedbacks)
         || ($view === 'schema' && $canReadSchema)
         || ($view === 'logs' && $canReadLogs)
+        || ($view === 'approvals' && $canReviewOfficers)
     );
 
     if (!$viewAllowed) {
@@ -482,6 +550,10 @@ if ($isAuthed) {
         }
 
         $crimeReports = $crimeManager->listCrimeReports(null, null, 100);
+    }
+
+    if ($view === 'crimes' && $canReadCrimes) {
+        $crimeReports = $crimeManager->listCrimeReportsFiltered($crimeFilters, 200);
     }
 
     if ($view === 'crimes' && $canReadCrimes && $selectedCrimeId > 0) {
@@ -522,9 +594,27 @@ if ($isAuthed) {
     }
 
     if ($view === 'suspects' && $canReadSuspects) {
-        $stmt = $db->query('SELECT id, first_name, last_name, national_id, suspect_status, created_at
-                            FROM suspects
-                            ORDER BY id DESC LIMIT 100');
+        $sql = 'SELECT id, first_name, last_name, national_id, suspect_status, created_at FROM suspects WHERE 1=1';
+        $params = [];
+
+        if ($suspectFilters['query'] !== '') {
+            $sql .= ' AND (first_name LIKE :q OR last_name LIKE :q OR national_id LIKE :q)';
+            $params['q'] = '%' . $suspectFilters['query'] . '%';
+        }
+
+        if ($suspectFilters['status'] !== '') {
+            $sql .= ' AND suspect_status = :status';
+            $params['status'] = strtoupper($suspectFilters['status']);
+        }
+
+        $sql .= ' ORDER BY id DESC LIMIT :limit';
+
+        $stmt = $db->prepare($sql);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue(':' . $key, $value);
+        }
+        $stmt->bindValue(':limit', 200, PDO::PARAM_INT);
+        $stmt->execute();
         $suspects = $stmt->fetchAll();
 
         if ($selectedSuspectId > 0) {
@@ -553,11 +643,36 @@ if ($isAuthed) {
     }
 
     if ($view === 'criminals' && $canReadCriminals) {
-        $stmt = $db->query('SELECT c.id, c.criminal_code, c.risk_level, c.current_status, c.confirmed_at AS created_at,
-                                   s.first_name, s.last_name
-                            FROM criminals c
-                            LEFT JOIN suspects s ON s.id = c.suspect_id
-                            ORDER BY c.id DESC LIMIT 100');
+        $sql = 'SELECT c.id, c.criminal_code, c.risk_level, c.current_status, c.confirmed_at AS created_at,
+                       s.first_name, s.last_name
+                FROM criminals c
+                LEFT JOIN suspects s ON s.id = c.suspect_id
+                WHERE 1=1';
+        $params = [];
+
+        if ($criminalFilters['query'] !== '') {
+            $sql .= ' AND (c.criminal_code LIKE :q OR s.first_name LIKE :q OR s.last_name LIKE :q)';
+            $params['q'] = '%' . $criminalFilters['query'] . '%';
+        }
+
+        if ($criminalFilters['status'] !== '') {
+            $sql .= ' AND c.current_status = :status';
+            $params['status'] = strtoupper($criminalFilters['status']);
+        }
+
+        if ($criminalFilters['risk'] !== '') {
+            $sql .= ' AND c.risk_level = :risk';
+            $params['risk'] = strtoupper($criminalFilters['risk']);
+        }
+
+        $sql .= ' ORDER BY c.id DESC LIMIT :limit';
+
+        $stmt = $db->prepare($sql);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue(':' . $key, $value);
+        }
+        $stmt->bindValue(':limit', 200, PDO::PARAM_INT);
+        $stmt->execute();
         $criminals = $stmt->fetchAll();
 
         if ($selectedCriminalId > 0) {
@@ -582,7 +697,32 @@ if ($isAuthed) {
     }
 
     if ($view === 'evidence') {
-        $stmt = $db->query('SELECT id, evidence_code, evidence_type, title, chain_status, created_at FROM evidence ORDER BY id DESC LIMIT 100');
+        $sql = 'SELECT id, evidence_code, evidence_type, title, chain_status, created_at FROM evidence WHERE 1=1';
+        $params = [];
+
+        if ($evidenceFilters['query'] !== '') {
+            $sql .= ' AND (evidence_code LIKE :q OR title LIKE :q)';
+            $params['q'] = '%' . $evidenceFilters['query'] . '%';
+        }
+
+        if ($evidenceFilters['status'] !== '') {
+            $sql .= ' AND chain_status = :status';
+            $params['status'] = strtoupper($evidenceFilters['status']);
+        }
+
+        if ($evidenceFilters['type'] !== '') {
+            $sql .= ' AND evidence_type = :type';
+            $params['type'] = strtoupper($evidenceFilters['type']);
+        }
+
+        $sql .= ' ORDER BY id DESC LIMIT :limit';
+
+        $stmt = $db->prepare($sql);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue(':' . $key, $value);
+        }
+        $stmt->bindValue(':limit', 200, PDO::PARAM_INT);
+        $stmt->execute();
         $evidences = $stmt->fetchAll();
 
         if ($selectedEvidenceId > 0) {
@@ -631,6 +771,10 @@ if ($isAuthed) {
         $schemas = $stmt->fetchAll();
     }
 
+    if ($view === 'approvals' && $canReviewOfficers) {
+        $applications = $officerApplications->listApplications($applicationStatusFilter);
+    }
+
     if ($view === 'logs' && $canReadLogs) {
         $activityLogs = $audit->listOfficerActivity(50);
         $loginLogs = $audit->listLoginLogs(50);
@@ -652,7 +796,11 @@ $bannerExists = $bannerPath !== null;
 require __DIR__ . '/views/partials/top.php';
 
 if (!$isAuthed) {
-    require __DIR__ . '/views/pages/login.php';
+    if ($view === 'signup') {
+        require __DIR__ . '/views/pages/signup.php';
+    } else {
+        require __DIR__ . '/views/pages/login.php';
+    }
 } else {
     require __DIR__ . '/views/partials/nav.php';
 
@@ -672,6 +820,8 @@ if (!$isAuthed) {
         require __DIR__ . '/views/pages/schema.php';
     } elseif ($view === 'logs' && $canReadLogs) {
         require __DIR__ . '/views/pages/logs.php';
+    } elseif ($view === 'approvals' && $canReviewOfficers) {
+        require __DIR__ . '/views/pages/approvals.php';
     }
 }
 
