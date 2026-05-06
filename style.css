@@ -5,17 +5,19 @@
  * - Responsive grid behavior for small screens.
  */
 :root {
-    --bg: #f4f6f9;
+    --bg: #f3f5f7;
     --card: #ffffff;
-    --text: #1f2a37;
-    --muted: #6b7280;
-    --line: #d8dee8;
-    --primary: #2b5d8a;
-    --primary-dark: #214a6d;
-    --ok-bg: #e7f6ea;
+    --text: #1c2430;
+    --muted: #5b6475;
+    --line: #d9e1ea;
+    --primary: #1f5f7a;
+    --primary-dark: #16445a;
+    --accent: #d8a24a;
+    --ok-bg: #e8f5ee;
     --ok-text: #1f7a3d;
-    --err-bg: #fdeaea;
+    --err-bg: #fdecec;
     --err-text: #9b1c1c;
+    --shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
 }
 
 * {
@@ -24,23 +26,25 @@
 
 body {
     margin: 0;
-    font-family: Tahoma, Verdana, sans-serif;
-    background: var(--bg);
+    font-family: "Source Sans 3", sans-serif;
+    background: radial-gradient(circle at top, #ffffff 0%, #f3f5f7 35%, #eef2f6 100%);
     color: var(--text);
 }
 
 .container {
-    max-width: 1100px;
+    max-width: 1180px;
     margin: 0 auto;
-    padding: 18px;
+    padding: 20px;
 }
 
 .card {
     background: var(--card);
     border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 14px;
-    margin-bottom: 12px;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow);
+    animation: riseIn 0.35s ease both;
 }
 
 .header {
@@ -50,8 +54,10 @@ body {
     gap: 10px;
 }
 
-h1, h2 {
+h1, h2, h3 {
     margin: 0 0 10px;
+    font-family: "Space Grotesk", sans-serif;
+    letter-spacing: 0.2px;
 }
 
 .help {
@@ -73,7 +79,7 @@ h1, h2 {
     color: var(--text);
     background: #fff;
     padding: 8px 12px;
-    border-radius: 7px;
+    border-radius: 999px;
     font-size: 14px;
 }
 
@@ -95,6 +101,7 @@ h1, h2 {
     border-radius: 8px;
     background: #fff;
     padding: 10px;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
 }
 
 .stat span {
@@ -116,10 +123,18 @@ h1, h2 {
 
 form {
     display: grid;
-    gap: 8px;
+    gap: 6px;
 }
 
-input, select, textarea, button {
+label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+input, select, textarea {
     width: 100%;
     border: 1px solid var(--line);
     border-radius: 7px;
@@ -127,20 +142,45 @@ input, select, textarea, button {
     font: inherit;
 }
 
+input:disabled {
+    background: #f1f5f9;
+    color: var(--muted);
+}
+
 button {
+    width: auto;
     background: var(--primary);
     color: #fff;
     border: none;
     cursor: pointer;
     font-weight: 700;
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+
+form button {
+    width: 100%;
+}
+
+.header form button {
+    width: auto;
 }
 
 button:hover {
     background: var(--primary-dark);
+    transform: translateY(-1px);
 }
 
 .btn-secondary {
     background: #4b5563;
+    color: #fff;
+    border-radius: 7px;
+    padding: 8px 12px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-weight: 600;
 }
 
 .alert {
@@ -166,6 +206,72 @@ button:hover {
     overflow-x: auto;
 }
 
+.section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 6px;
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+    align-items: end;
+}
+
+.action-panel {
+    background: #f8fbff;
+    border: 1px solid #dbe7f2;
+}
+
+.action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.action-buttons button {
+    background: #ffffff;
+    color: var(--text);
+    border: 1px solid var(--line);
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-weight: 600;
+}
+
+.action-buttons button.is-active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+}
+
+.action-forms {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.action-form {
+    display: none;
+}
+
+.action-form.is-active {
+    display: block;
+}
+
+.inline-form {
+    display: grid;
+    gap: 6px;
+    margin-bottom: 8px;
+    padding: 10px;
+    border: 1px dashed var(--line);
+    border-radius: 8px;
+    background: #fafbfd;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
@@ -180,6 +286,19 @@ th, td {
 
 th {
     background: #f0f4fa;
+}
+
+tbody tr:hover {
+    background: #f9fbfe;
+}
+
+a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
 }
 
 .login-box {
@@ -209,8 +328,24 @@ th {
     border: 1px solid var(--line);
 }
 
+@keyframes riseIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 @media (max-width: 860px) {
     .grid-2 {
         grid-template-columns: 1fr;
+    }
+
+    .section-head {
+        flex-direction: column;
+        align-items: flex-start;
     }
 }

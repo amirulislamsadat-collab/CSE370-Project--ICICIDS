@@ -16,4 +16,5 @@
         <input type="password" name="password" required>
         <button type="submit">Login</button>
     </form>
+    <p class="help">Need access? <a href="index.php?view=signup">Request an account</a>.</p>
 </div>

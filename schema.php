@@ -9,6 +9,7 @@ $schemas = $schemas ?? [];
         <h2>Submit Schema Request</h2>
         <form method="post">
             <input type="hidden" name="action" value="submit_schema">
+            <label>Request Type</label>
             <select name="request_type">
                 <option>CREATE</option>
                 <option>ALTER</option>
@@ -16,8 +17,11 @@ $schemas = $schemas ?? [];
                 <option>INDEX</option>
                 <option>OTHER</option>
             </select>
+            <label>Target Object</label>
             <input name="object_name" required placeholder="Target object">
+            <label>Reason</label>
             <textarea name="reason" rows="3" required placeholder="Reason"></textarea>
+            <label>SQL Proposal</label>
             <textarea name="sql_proposal" rows="4" required placeholder="SQL proposal"></textarea>
             <button type="submit">Submit</button>
         </form>

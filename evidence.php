@@ -8,6 +8,7 @@ $evidenceDetail = $evidenceDetail ?? null;
 $evidenceCrimes = $evidenceCrimes ?? [];
 $evidenceSuspects = $evidenceSuspects ?? [];
 $evidences = $evidences ?? [];
+$evidenceFilters = $evidenceFilters ?? ['query' => '', 'status' => '', 'type' => ''];
 ?>
 
 <?php if ($evidenceDetail): ?>
@@ -52,12 +53,12 @@ $evidences = $evidences ?? [];
         <?php if ($evidenceCrimes): ?>
             <div class="table-wrap">
                 <table>
-                    <thead><tr><th>ID</th><th>Case</th><th>Type</th><th>Status</th><th>Date</th></tr></thead>
+                    <thead><tr><th>ID</th><th>Crime Name</th><th>Type</th><th>Status</th><th>Date</th></tr></thead>
                     <tbody>
                     <?php foreach ($evidenceCrimes as $row): ?>
                         <tr>
                             <td><a href="index.php?view=crimes&crime_id=<?= h((string)$row['id']) ?>"><?= h((string)$row['id']) ?></a></td>
-                            <td><?= h((string)$row['case_number']) ?></td>
+                            <td><a href="index.php?view=crimes&crime_id=<?= h((string)$row['id']) ?>"><?= h((string)$row['case_number']) ?></a></td>
                             <td><?= h((string)$row['crime_type']) ?></td>
                             <td><?= h((string)$row['investigation_status']) ?></td>
                             <td><?= h((string)$row['crime_datetime']) ?></td>
@@ -79,7 +80,7 @@ $evidences = $evidences ?? [];
                     <?php foreach ($evidenceSuspects as $row): ?>
                         <tr>
                             <td><a href="index.php?view=suspects&suspect_id=<?= h((string)$row['id']) ?>"><?= h((string)$row['id']) ?></a></td>
-                            <td><?= h((string)$row['first_name'] . ' ' . (string)$row['last_name']) ?></td>
+                            <td><a href="index.php?view=suspects&suspect_id=<?= h((string)$row['id']) ?>"><?= h((string)$row['first_name'] . ' ' . (string)$row['last_name']) ?></a></td>
                             <td><?= h((string)$row['suspect_status']) ?></td>
                         </tr>
                     <?php endforeach; ?>
@@ -92,13 +93,30 @@ $evidences = $evidences ?? [];
     </section>
 <?php endif; ?>
 
-<div class="grid-2">
+<?php if ($canCreateEvidence || $canUpdateEvidence || $canDeleteEvidence || $canLinkEvidence): ?>
+    <section class="card action-panel">
+        <h2>Evidence Actions</h2>
+        <p class="help">Select an action to open its form.</p>
+        <div class="action-buttons" data-action-group="evidence-actions" data-default-action="evidence-create">
+            <?php if ($canCreateEvidence): ?><button type="button" data-action-target="evidence-create">Add Evidence</button><?php endif; ?>
+            <?php if ($canUpdateEvidence): ?><button type="button" data-action-target="evidence-update">Update Status</button><?php endif; ?>
+            <?php if ($canDeleteEvidence): ?><button type="button" data-action-target="evidence-delete">Delete Evidence</button><?php endif; ?>
+            <?php if ($canLinkEvidence): ?><button type="button" data-action-target="evidence-link">Link Evidence</button><?php endif; ?>
+            <?php if ($canLinkEvidence): ?><button type="button" data-action-target="evidence-unlink-case">Unlink from Crime</button><?php endif; ?>
+            <?php if ($canLinkEvidence): ?><button type="button" data-action-target="evidence-unlink-suspect">Unlink from Suspect</button><?php endif; ?>
+        </div>
+    </section>
+<?php endif; ?>
+
+<div class="action-forms" data-action-forms="evidence-actions">
     <?php if ($canCreateEvidence): ?>
-        <section class="card">
+        <section class="card action-form" data-action-form="evidence-create">
             <h2>Add Evidence (Linked to Crime)</h2>
             <form method="post">
                 <input type="hidden" name="action" value="create_evidence">
+                <label>Crime Report ID</label>
                 <input type="number" name="crime_report_id" required placeholder="Crime report ID">
+                <label>Evidence Type</label>
                 <select name="evidence_type">
                     <option>FINGERPRINT</option>
                     <option>DOCUMENT</option>
@@ -109,9 +127,13 @@ $evidences = $evidences ?? [];
                     <option>AUDIO</option>
                     <option>OTHER</option>
                 </select>
+                <label>Evidence Title</label>
                 <input name="title" required placeholder="Evidence title">
+                <label>File Path</label>
                 <input name="file_path" placeholder="/evidence/file.ext">
+                <label>Storage Location</label>
                 <input name="storage_location" placeholder="Storage location">
+                <label>Chain Status</label>
                 <select name="chain_status">
                     <option>COLLECTED</option>
                     <option>IN_LAB</option>
@@ -120,7 +142,9 @@ $evidences = $evidences ?? [];
                     <option>RELEASED</option>
                     <option>DISPOSED</option>
                 </select>
+                <label>Relation Note</label>
                 <input name="relation_note" placeholder="Relation note (optional)">
+                <label>Description</label>
                 <textarea name="evidence_description" rows="3" placeholder="Description"></textarea>
                 <button type="submit">Create</button>
             </form>
@@ -128,11 +152,13 @@ $evidences = $evidences ?? [];
     <?php endif; ?>
 
     <?php if ($canUpdateEvidence): ?>
-        <section class="card">
+        <section class="card action-form" data-action-form="evidence-update">
             <h2>Update Evidence Status</h2>
             <form method="post">
                 <input type="hidden" name="action" value="update_evidence">
+                <label>Evidence ID</label>
                 <input type="number" name="evidence_id" required placeholder="Evidence ID">
+                <label>New Chain Status</label>
                 <select name="new_chain_status">
                     <option>COLLECTED</option>
                     <option>IN_LAB</option>
@@ -147,49 +173,89 @@ $evidences = $evidences ?? [];
     <?php endif; ?>
 
     <?php if ($canDeleteEvidence): ?>
-        <section class="card">
+        <section class="card action-form" data-action-form="evidence-delete">
             <h2>Delete Evidence</h2>
             <form method="post">
                 <input type="hidden" name="action" value="delete_evidence">
+                <label>Evidence ID</label>
                 <input type="number" name="evidence_id" required placeholder="Evidence ID">
                 <button type="submit">Delete</button>
             </form>
         </section>
     <?php endif; ?>
+    <?php if ($canLinkEvidence): ?>
+        <section class="card action-form" data-action-form="evidence-link">
+            <h2>Link Existing Evidence to Crime</h2>
+            <form method="post">
+                <input type="hidden" name="action" value="link_evidence">
+                <label>Evidence ID</label>
+                <input type="number" name="evidence_id" required placeholder="Evidence ID">
+                <label>Crime Report ID</label>
+                <input type="number" name="crime_report_id" required placeholder="Crime report ID">
+                <label>Relation Note</label>
+                <input name="relation_note" placeholder="Relation note (optional)">
+                <button type="submit">Link</button>
+            </form>
+        </section>
+
+        <section class="card action-form" data-action-form="evidence-unlink-case">
+            <h2>Unlink Evidence From Crime</h2>
+            <form method="post">
+                <input type="hidden" name="action" value="unlink_evidence_case">
+                <label>Evidence ID</label>
+                <input type="number" name="evidence_id" required placeholder="Evidence ID to unlink">
+                <label>Crime Report ID</label>
+                <input type="number" name="crime_report_id" required placeholder="Crime report ID to unlink from">
+                <button type="submit">Unlink</button>
+            </form>
+        </section>
+
+        <section class="card action-form" data-action-form="evidence-unlink-suspect">
+            <h2>Unlink Evidence From Suspect</h2>
+            <form method="post">
+                <input type="hidden" name="action" value="unlink_evidence_suspect">
+                <label>Evidence ID</label>
+                <input type="number" name="evidence_id" required placeholder="Evidence ID to unlink">
+                <label>Suspect ID</label>
+                <input type="number" name="suspect_id" required placeholder="Suspect ID to unlink from">
+                <button type="submit">Unlink</button>
+            </form>
+        </section>
+    <?php endif; ?>
 </div>
 
-<?php if ($canLinkEvidence): ?>
-    <section class="card">
-        <h2>Link Existing Evidence to Crime</h2>
-        <form method="post">
-            <input type="hidden" name="action" value="link_evidence">
-            <input type="number" name="evidence_id" required placeholder="Evidence ID">
-            <input type="number" name="crime_report_id" required placeholder="Crime report ID">
-            <input name="relation_note" placeholder="Relation note (optional)">
-            <button type="submit">Link</button>
-        </form>
-    </section>
-
-    <section class="card">
-        <h2>Unlink Evidence From Crime</h2>
-        <form method="post">
-            <input type="hidden" name="action" value="unlink_evidence_case">
-            <input type="number" name="evidence_id" required placeholder="Evidence ID to unlink">
-            <input type="number" name="crime_report_id" required placeholder="Crime report ID to unlink from">
-            <button type="submit">Unlink</button>
-        </form>
-    </section>
-
-    <section class="card">
-        <h2>Unlink Evidence From Suspect</h2>
-        <form method="post">
-            <input type="hidden" name="action" value="unlink_evidence_suspect">
-            <input type="number" name="evidence_id" required placeholder="Evidence ID to unlink">
-            <input type="number" name="suspect_id" required placeholder="Suspect ID to unlink from">
-            <button type="submit">Unlink</button>
-        </form>
-    </section>
-<?php endif; ?>
+<section class="card">
+    <h2>Filter Evidence</h2>
+    <form method="get" class="filter-grid">
+        <input type="hidden" name="view" value="evidence">
+        <label>Search (Code or Title)</label>
+        <input type="text" name="evidence_q" value="<?= h((string)$evidenceFilters['query']) ?>" placeholder="Search code or title">
+        <label>Type</label>
+        <select name="evidence_type">
+            <option value="" <?= $evidenceFilters['type'] === '' ? 'selected' : '' ?>>All types</option>
+            <option value="FINGERPRINT" <?= $evidenceFilters['type'] === 'FINGERPRINT' ? 'selected' : '' ?>>FINGERPRINT</option>
+            <option value="DOCUMENT" <?= $evidenceFilters['type'] === 'DOCUMENT' ? 'selected' : '' ?>>DOCUMENT</option>
+            <option value="DIGITAL_FILE" <?= $evidenceFilters['type'] === 'DIGITAL_FILE' ? 'selected' : '' ?>>DIGITAL_FILE</option>
+            <option value="WEAPON" <?= $evidenceFilters['type'] === 'WEAPON' ? 'selected' : '' ?>>WEAPON</option>
+            <option value="BIOLOGICAL" <?= $evidenceFilters['type'] === 'BIOLOGICAL' ? 'selected' : '' ?>>BIOLOGICAL</option>
+            <option value="VIDEO" <?= $evidenceFilters['type'] === 'VIDEO' ? 'selected' : '' ?>>VIDEO</option>
+            <option value="AUDIO" <?= $evidenceFilters['type'] === 'AUDIO' ? 'selected' : '' ?>>AUDIO</option>
+            <option value="OTHER" <?= $evidenceFilters['type'] === 'OTHER' ? 'selected' : '' ?>>OTHER</option>
+        </select>
+        <label>Status</label>
+        <select name="evidence_status">
+            <option value="" <?= $evidenceFilters['status'] === '' ? 'selected' : '' ?>>All statuses</option>
+            <option value="COLLECTED" <?= $evidenceFilters['status'] === 'COLLECTED' ? 'selected' : '' ?>>COLLECTED</option>
+            <option value="IN_LAB" <?= $evidenceFilters['status'] === 'IN_LAB' ? 'selected' : '' ?>>IN_LAB</option>
+            <option value="IN_STORAGE" <?= $evidenceFilters['status'] === 'IN_STORAGE' ? 'selected' : '' ?>>IN_STORAGE</option>
+            <option value="IN_COURT" <?= $evidenceFilters['status'] === 'IN_COURT' ? 'selected' : '' ?>>IN_COURT</option>
+            <option value="RELEASED" <?= $evidenceFilters['status'] === 'RELEASED' ? 'selected' : '' ?>>RELEASED</option>
+            <option value="DISPOSED" <?= $evidenceFilters['status'] === 'DISPOSED' ? 'selected' : '' ?>>DISPOSED</option>
+        </select>
+        <button type="submit">Apply Filters</button>
+        <a class="btn-secondary" href="index.php?view=evidence">Reset</a>
+    </form>
+</section>
 
 <section class="card">
     <h2>Evidence List</h2>

@@ -12,6 +12,7 @@ $canReadEvidence = $canReadEvidence ?? false;
 $canReadFeedbacks = $canReadFeedbacks ?? false;
 $canReadSchema = $canReadSchema ?? false;
 $canReadLogs = $canReadLogs ?? false;
+$canReviewOfficers = $canReviewOfficers ?? false;
 ?>
 
 <header class="header card">
@@ -36,5 +37,6 @@ $canReadLogs = $canReadLogs ?? false;
     <?php if ($canReadEvidence): ?><a class="<?= $view === 'evidence' ? 'active' : '' ?>" href="index.php?view=evidence">Evidence</a><?php endif; ?>
     <?php if ($canReadFeedbacks): ?><a class="<?= $view === 'feedbacks' ? 'active' : '' ?>" href="index.php?view=feedbacks">Feedbacks</a><?php endif; ?>
     <?php if ($canReadSchema): ?><a class="<?= $view === 'schema' ? 'active' : '' ?>" href="index.php?view=schema">Schema Requests</a><?php endif; ?>
+    <?php if ($canReviewOfficers): ?><a class="<?= $view === 'approvals' ? 'active' : '' ?>" href="index.php?view=approvals">Approvals</a><?php endif; ?>
     <?php if ($canReadLogs): ?><a class="<?= $view === 'logs' ? 'active' : '' ?>" href="index.php?view=logs">Audit Logs</a><?php endif; ?>
 </nav>

@@ -4,6 +4,7 @@
         <h2>Submit Feedback</h2>
         <form method="post">
             <input type="hidden" name="action" value="submit_feedback">
+            <label>Module</label>
             <select name="module_name">
                 <option>CRIME_REPORTING</option>
                 <option>SUSPECT_TRACKING</option>
@@ -13,6 +14,7 @@
                 <option>AUTH_SECURITY</option>
                 <option>OTHER</option>
             </select>
+            <label>Category</label>
             <select name="category">
                 <option>BUG</option>
                 <option>FEATURE</option>
@@ -21,6 +23,7 @@
                 <option>SECURITY</option>
                 <option>OTHER</option>
             </select>
+            <label>Message</label>
             <textarea name="message" rows="4" required placeholder="Write your feedback"></textarea>
             <button type="submit">Submit</button>
         </form>
