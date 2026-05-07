@@ -231,8 +231,8 @@ $evidenceFilters = $evidenceFilters ?? ['query' => '', 'status' => '', 'type' =>
     <form method="get" class="filter-grid">
         <input type="hidden" name="view" value="evidence">
         <div class="filter-field">
-            <label>Search (Code or Title)</label>
-            <input type="text" name="evidence_q" value="<?= h((string)$evidenceFilters['query']) ?>" placeholder="Search code or title">
+            <label>ID</label>
+            <input type="text" name="evidence_q" value="<?= h((string)$evidenceFilters['query']) ?>" placeholder="10">
         </div>
         <div class="filter-field">
             <label>Type</label>

@@ -168,8 +168,8 @@ final class CrimeAndSuspectManager
 
         $query = trim((string)($filters['query'] ?? ''));
         if ($query !== '') {
-            $sql .= ' AND (case_number LIKE :query OR crime_type LIKE :query OR location_text LIKE :query)';
-            $params['query'] = '%' . $query . '%';
+            $sql .= ' AND id = :exact_id';
+            $params['exact_id'] = is_numeric($query) ? (int)$query : -1;
         }
 
         $status = trim((string)($filters['status'] ?? ''));

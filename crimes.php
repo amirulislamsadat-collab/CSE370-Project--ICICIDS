@@ -244,8 +244,8 @@ $canUnlinkCriminal = $canUnlinkCriminal ?? false;
     <form method="get" class="filter-grid">
         <input type="hidden" name="view" value="crimes">
         <div class="filter-field">
-            <label>Search (Name, Type, Location)</label>
-            <input type="text" name="crime_q" value="<?= h((string)$crimeFilters['query']) ?>" placeholder="Search crime name, type, or location">
+            <label>ID</label>
+            <input type="text" name="crime_q" value="<?= h((string)$crimeFilters['query']) ?>" placeholder="10">
         </div>
         <div class="filter-field">
             <label>Status</label>

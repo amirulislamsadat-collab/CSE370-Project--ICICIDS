@@ -210,8 +210,8 @@ $criminalFilters = $criminalFilters ?? ['query' => '', 'status' => '', 'risk' =>
     <form method="get" class="filter-grid">
         <input type="hidden" name="view" value="criminals">
         <div class="filter-field">
-            <label>Search (Code or Name)</label>
-            <input type="text" name="criminal_q" value="<?= h((string)$criminalFilters['query']) ?>" placeholder="Search code or name">
+            <label>ID</label>
+            <input type="text" name="criminal_q" value="<?= h((string)$criminalFilters['query']) ?>" placeholder="10">
         </div>
         <div class="filter-field">
             <label>Status</label>

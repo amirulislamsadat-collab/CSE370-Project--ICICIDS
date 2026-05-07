@@ -560,6 +560,10 @@ if ($isAuthed) {
 
     if ($view === 'crimes' && $canReadCrimes) {
         $crimeReports = $crimeManager->listCrimeReportsFiltered($crimeFilters, 200);
+        $hasFilters = $crimeFilters['query'] !== '' || $crimeFilters['status'] !== '' || $crimeFilters['type'] !== '' || $crimeFilters['from'] !== '' || $crimeFilters['to'] !== '';
+        if (empty($crimeReports) && $hasFilters) {
+            $flash = ['type' => 'error', 'message' => 'Error: The value doesn\'t exist or invalid input.'];
+        }
     }
 
     if ($view === 'crimes' && $canReadCrimes && $selectedCrimeId > 0) {
@@ -604,8 +608,8 @@ if ($isAuthed) {
         $params = [];
 
         if ($suspectFilters['query'] !== '') {
-            $sql .= ' AND (first_name LIKE :q OR last_name LIKE :q OR national_id LIKE :q)';
-            $params['q'] = '%' . $suspectFilters['query'] . '%';
+            $sql .= ' AND id = :exact_id';
+            $params['exact_id'] = is_numeric($suspectFilters['query']) ? (int)$suspectFilters['query'] : -1;
         }
 
         if ($suspectFilters['status'] !== '') {
@@ -622,6 +626,11 @@ if ($isAuthed) {
         $stmt->bindValue(':limit', 200, PDO::PARAM_INT);
         $stmt->execute();
         $suspects = $stmt->fetchAll();
+
+        $hasFilters = $suspectFilters['query'] !== '' || $suspectFilters['status'] !== '';
+        if (empty($suspects) && $hasFilters) {
+            $flash = ['type' => 'error', 'message' => 'Error: The value doesn\'t exist or invalid input.'];
+        }
 
         if ($selectedSuspectId > 0) {
             $stmt = $db->prepare('SELECT * FROM suspects WHERE id = :id');
@@ -657,8 +666,8 @@ if ($isAuthed) {
         $params = [];
 
         if ($criminalFilters['query'] !== '') {
-            $sql .= ' AND (c.criminal_code LIKE :q OR s.first_name LIKE :q OR s.last_name LIKE :q)';
-            $params['q'] = '%' . $criminalFilters['query'] . '%';
+            $sql .= ' AND c.id = :exact_id';
+            $params['exact_id'] = is_numeric($criminalFilters['query']) ? (int)$criminalFilters['query'] : -1;
         }
 
         if ($criminalFilters['status'] !== '') {
@@ -680,6 +689,11 @@ if ($isAuthed) {
         $stmt->bindValue(':limit', 200, PDO::PARAM_INT);
         $stmt->execute();
         $criminals = $stmt->fetchAll();
+
+        $hasFilters = $criminalFilters['query'] !== '' || $criminalFilters['status'] !== '' || $criminalFilters['risk'] !== '';
+        if (empty($criminals) && $hasFilters) {
+            $flash = ['type' => 'error', 'message' => 'Error: The value doesn\'t exist or invalid input.'];
+        }
 
         if ($selectedCriminalId > 0) {
             $stmt = $db->prepare('SELECT c.*, s.id AS suspect_id, s.first_name, s.last_name, s.national_id
@@ -707,8 +721,8 @@ if ($isAuthed) {
         $params = [];
 
         if ($evidenceFilters['query'] !== '') {
-            $sql .= ' AND (evidence_code LIKE :q OR title LIKE :q)';
-            $params['q'] = '%' . $evidenceFilters['query'] . '%';
+            $sql .= ' AND id = :exact_id';
+            $params['exact_id'] = is_numeric($evidenceFilters['query']) ? (int)$evidenceFilters['query'] : -1;
         }
 
         if ($evidenceFilters['status'] !== '') {
@@ -730,6 +744,11 @@ if ($isAuthed) {
         $stmt->bindValue(':limit', 200, PDO::PARAM_INT);
         $stmt->execute();
         $evidences = $stmt->fetchAll();
+
+        $hasFilters = $evidenceFilters['query'] !== '' || $evidenceFilters['status'] !== '' || $evidenceFilters['type'] !== '';
+        if (empty($evidences) && $hasFilters) {
+            $flash = ['type' => 'error', 'message' => 'Error: The value doesn\'t exist or invalid input.'];
+        }
 
         if ($selectedEvidenceId > 0) {
             $stmt = $db->prepare('SELECT e.*, o.first_name AS collected_by_first_name, o.last_name AS collected_by_last_name

@@ -233,8 +233,8 @@ $suspectFilters = $suspectFilters ?? ['query' => '', 'status' => ''];
     <form method="get" class="filter-grid">
         <input type="hidden" name="view" value="suspects">
         <div class="filter-field">
-            <label>Search (Name or NID)</label>
-            <input type="text" name="suspect_q" value="<?= h((string)$suspectFilters['query']) ?>" placeholder="Search name or NID">
+            <label>ID</label>
+            <input type="text" name="suspect_q" value="<?= h((string)$suspectFilters['query']) ?>" placeholder="10">
         </div>
         <div class="filter-field">
             <label>Status</label>
