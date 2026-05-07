@@ -11,6 +11,9 @@ $canDeleteCrime = $canDeleteCrime ?? false;
 $canLinkSuspect = $canLinkSuspect ?? false;
 $canLinkEvidence = $canLinkEvidence ?? false;
 $canLinkCriminal = $canLinkCriminal ?? false;
+$canUnlinkSuspect = $canUnlinkSuspect ?? false;
+$canUnlinkEvidence = $canUnlinkEvidence ?? false;
+$canUnlinkCriminal = $canUnlinkCriminal ?? false;
 ?>
 
 <?php if ($crimeDetail): ?>
@@ -124,16 +127,14 @@ $canLinkCriminal = $canLinkCriminal ?? false;
             <?php if ($canCreateCrime): ?><button type="button" data-action-target="crime-create">Create Crime</button><?php endif; ?>
             <?php if ($canUpdateCrime): ?><button type="button" data-action-target="crime-update">Update Status</button><?php endif; ?>
             <?php if ($canDeleteCrime): ?><button type="button" data-action-target="crime-delete">Delete Crime</button><?php endif; ?>
-            <?php if ($canLinkSuspect): ?><button type="button" data-action-target="crime-unlink-suspect">Unlink Suspect</button><?php endif; ?>
-            <?php if ($canLinkEvidence): ?><button type="button" data-action-target="crime-unlink-evidence">Unlink Evidence</button><?php endif; ?>
-            <?php if ($canLinkCriminal): ?><button type="button" data-action-target="crime-unlink-criminal">Unlink Criminal</button><?php endif; ?>
+            <?php if ($canUnlinkSuspect): ?><button type="button" data-action-target="crime-unlink-suspect">Unlink Suspect</button><?php endif; ?>
+            <?php if ($canUnlinkEvidence): ?><button type="button" data-action-target="crime-unlink-evidence">Unlink Evidence</button><?php endif; ?>
+            <?php if ($canUnlinkCriminal): ?><button type="button" data-action-target="crime-unlink-criminal">Unlink Criminal</button><?php endif; ?>
         </div>
     </section>
-<?php endif; ?>
-
-<div class="action-forms" data-action-forms="crime-actions">
+    <div class="action-forms" data-action-forms="crime-actions">
     <?php if ($canCreateCrime): ?>
-        <section class="card action-form" data-action-form="crime-create">
+        <section class="card action-form" data-action-form="crime-create" hidden>
             <h2>Create Crime Report</h2>
             <form method="post">
                 <input type="hidden" name="action" value="create_crime">
@@ -161,7 +162,7 @@ $canLinkCriminal = $canLinkCriminal ?? false;
     <?php endif; ?>
 
     <?php if ($canUpdateCrime): ?>
-        <section class="card action-form" data-action-form="crime-update">
+        <section class="card action-form" data-action-form="crime-update" hidden>
             <h2>Update Crime Status</h2>
             <form method="post">
                 <input type="hidden" name="action" value="update_crime">
@@ -183,7 +184,7 @@ $canLinkCriminal = $canLinkCriminal ?? false;
     <?php endif; ?>
 
     <?php if ($canDeleteCrime): ?>
-        <section class="card action-form" data-action-form="crime-delete">
+        <section class="card action-form" data-action-form="crime-delete" hidden>
             <h2>Delete Crime Report</h2>
             <form method="post">
                 <input type="hidden" name="action" value="delete_crime">
@@ -194,8 +195,8 @@ $canLinkCriminal = $canLinkCriminal ?? false;
         </section>
     <?php endif; ?>
 
-    <?php if ($canLinkSuspect): ?>
-        <section class="card action-form" data-action-form="crime-unlink-suspect">
+    <?php if ($canUnlinkSuspect): ?>
+        <section class="card action-form" data-action-form="crime-unlink-suspect" hidden>
             <h2>Unlink Suspect From This Crime</h2>
             <form method="post">
                 <input type="hidden" name="action" value="unlink_suspect">
@@ -208,8 +209,8 @@ $canLinkCriminal = $canLinkCriminal ?? false;
         </section>
     <?php endif; ?>
 
-    <?php if ($canLinkEvidence): ?>
-        <section class="card action-form" data-action-form="crime-unlink-evidence">
+    <?php if ($canUnlinkEvidence): ?>
+        <section class="card action-form" data-action-form="crime-unlink-evidence" hidden>
             <h2>Unlink Evidence From This Crime</h2>
             <form method="post">
                 <input type="hidden" name="action" value="unlink_evidence_case">
@@ -222,8 +223,8 @@ $canLinkCriminal = $canLinkCriminal ?? false;
         </section>
     <?php endif; ?>
 
-    <?php if ($canLinkCriminal): ?>
-        <section class="card action-form" data-action-form="crime-unlink-criminal">
+    <?php if ($canUnlinkCriminal): ?>
+        <section class="card action-form" data-action-form="crime-unlink-criminal" hidden>
             <h2>Unlink Criminal From This Crime</h2>
             <form method="post">
                 <input type="hidden" name="action" value="unlink_criminal_case">
@@ -235,31 +236,44 @@ $canLinkCriminal = $canLinkCriminal ?? false;
             </form>
         </section>
     <?php endif; ?>
-</div>
+    </div>
+<?php endif; ?>
 
 <section class="card">
     <h2>Filter Crime Reports</h2>
     <form method="get" class="filter-grid">
         <input type="hidden" name="view" value="crimes">
-        <label>Search (Name, Type, Location)</label>
-        <input type="text" name="crime_q" value="<?= h((string)$crimeFilters['query']) ?>" placeholder="Search crime name, type, or location">
-        <label>Status</label>
-        <select name="crime_status">
+        <div class="filter-field">
+            <label>Search (Name, Type, Location)</label>
+            <input type="text" name="crime_q" value="<?= h((string)$crimeFilters['query']) ?>" placeholder="Search crime name, type, or location">
+        </div>
+        <div class="filter-field">
+            <label>Status</label>
+            <select name="crime_status">
             <option value="" <?= $crimeFilters['status'] === '' ? 'selected' : '' ?>>All statuses</option>
             <option value="OPEN" <?= $crimeFilters['status'] === 'OPEN' ? 'selected' : '' ?>>OPEN</option>
             <option value="UNDER_INVESTIGATION" <?= $crimeFilters['status'] === 'UNDER_INVESTIGATION' ? 'selected' : '' ?>>UNDER_INVESTIGATION</option>
             <option value="SUSPENDED" <?= $crimeFilters['status'] === 'SUSPENDED' ? 'selected' : '' ?>>SUSPENDED</option>
             <option value="CLOSED" <?= $crimeFilters['status'] === 'CLOSED' ? 'selected' : '' ?>>CLOSED</option>
             <option value="REFERRED" <?= $crimeFilters['status'] === 'REFERRED' ? 'selected' : '' ?>>REFERRED</option>
-        </select>
-        <label>Crime Type</label>
-        <input type="text" name="crime_type" value="<?= h((string)$crimeFilters['type']) ?>" placeholder="E.g., ROBBERY">
-        <label>Date From</label>
-        <input type="date" name="crime_from" value="<?= h((string)$crimeFilters['from']) ?>">
-        <label>Date To</label>
-        <input type="date" name="crime_to" value="<?= h((string)$crimeFilters['to']) ?>">
-        <button type="submit">Apply Filters</button>
-        <a class="btn-secondary" href="index.php?view=crimes">Reset</a>
+            </select>
+        </div>
+        <div class="filter-field">
+            <label>Crime Type</label>
+            <input type="text" name="crime_type" value="<?= h((string)$crimeFilters['type']) ?>" placeholder="E.g., ROBBERY">
+        </div>
+        <div class="filter-field">
+            <label>Date From</label>
+            <input type="date" name="crime_from" value="<?= h((string)$crimeFilters['from']) ?>">
+        </div>
+        <div class="filter-field">
+            <label>Date To</label>
+            <input type="date" name="crime_to" value="<?= h((string)$crimeFilters['to']) ?>">
+        </div>
+        <div class="filter-actions">
+            <button type="submit">Apply Filters</button>
+            <a class="btn-secondary" href="index.php?view=crimes">Reset</a>
+        </div>
     </form>
 </section>
 

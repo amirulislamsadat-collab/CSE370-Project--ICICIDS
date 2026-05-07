@@ -5,6 +5,7 @@ $canCreateSuspect = $canCreateSuspect ?? false;
 $canUpdateSuspect = $canUpdateSuspect ?? false;
 $canLinkSuspect = $canLinkSuspect ?? false;
 $canDeleteSuspect = $canDeleteSuspect ?? false;
+$canUnlinkSuspect = $canUnlinkSuspect ?? false;
 $suspects = $suspects ?? [];
 $suspectDetail = $suspectDetail ?? null;
 $suspectCrimes = $suspectCrimes ?? [];
@@ -20,14 +21,12 @@ $suspectFilters = $suspectFilters ?? ['query' => '', 'status' => ''];
             <?php if ($canLinkSuspect): ?><button type="button" data-action-target="suspect-link">Link Suspect</button><?php endif; ?>
             <?php if ($canUpdateSuspect): ?><button type="button" data-action-target="suspect-update">Update Status</button><?php endif; ?>
             <?php if ($canDeleteSuspect): ?><button type="button" data-action-target="suspect-delete">Delete Suspect</button><?php endif; ?>
-            <?php if ($canLinkSuspect): ?><button type="button" data-action-target="suspect-unlink">Unlink Suspect</button><?php endif; ?>
+            <?php if ($canUnlinkSuspect): ?><button type="button" data-action-target="suspect-unlink">Unlink Suspect</button><?php endif; ?>
         </div>
     </section>
-<?php endif; ?>
-
-<div class="action-forms" data-action-forms="suspect-actions">
+    <div class="action-forms" data-action-forms="suspect-actions">
     <?php if ($canCreateSuspect): ?>
-        <section class="card action-form" data-action-form="suspect-create">
+        <section class="card action-form" data-action-form="suspect-create" hidden>
             <h2>Create Suspect (Linked to Crime)</h2>
             <form method="post">
                 <input type="hidden" name="action" value="create_suspect">
@@ -76,7 +75,7 @@ $suspectFilters = $suspectFilters ?? ['query' => '', 'status' => ''];
     <?php endif; ?>
 
     <?php if ($canLinkSuspect): ?>
-        <section class="card action-form" data-action-form="suspect-link">
+        <section class="card action-form" data-action-form="suspect-link" hidden>
             <h2>Link Existing Suspect to Crime</h2>
             <form method="post">
                 <input type="hidden" name="action" value="link_suspect">
@@ -99,7 +98,7 @@ $suspectFilters = $suspectFilters ?? ['query' => '', 'status' => ''];
     <?php endif; ?>
 
     <?php if ($canDeleteSuspect): ?>
-        <section class="card action-form" data-action-form="suspect-delete">
+        <section class="card action-form" data-action-form="suspect-delete" hidden>
             <h2>Delete Suspect</h2>
             <form method="post">
                 <input type="hidden" name="action" value="delete_suspect">
@@ -111,7 +110,7 @@ $suspectFilters = $suspectFilters ?? ['query' => '', 'status' => ''];
     <?php endif; ?>
 
     <?php if ($canUpdateSuspect): ?>
-        <section class="card action-form" data-action-form="suspect-update">
+        <section class="card action-form" data-action-form="suspect-update" hidden>
             <h2>Update Suspect Status</h2>
             <form method="post">
                 <input type="hidden" name="action" value="update_suspect_status">
@@ -129,8 +128,8 @@ $suspectFilters = $suspectFilters ?? ['query' => '', 'status' => ''];
         </section>
     <?php endif; ?>
 
-    <?php if ($canLinkSuspect): ?>
-        <section class="card action-form" data-action-form="suspect-unlink">
+    <?php if ($canUnlinkSuspect): ?>
+        <section class="card action-form" data-action-form="suspect-unlink" hidden>
             <h2>Unlink Suspect From Crime</h2>
             <form method="post">
                 <input type="hidden" name="action" value="unlink_suspect">
@@ -142,7 +141,8 @@ $suspectFilters = $suspectFilters ?? ['query' => '', 'status' => ''];
             </form>
         </section>
     <?php endif; ?>
-</div>
+    </div>
+<?php endif; ?>
 
 <?php if ($suspectDetail): ?>
     <section class="card">
@@ -232,18 +232,24 @@ $suspectFilters = $suspectFilters ?? ['query' => '', 'status' => ''];
     <h2>Filter Suspects</h2>
     <form method="get" class="filter-grid">
         <input type="hidden" name="view" value="suspects">
-        <label>Search (Name or NID)</label>
-        <input type="text" name="suspect_q" value="<?= h((string)$suspectFilters['query']) ?>" placeholder="Search name or NID">
-        <label>Status</label>
-        <select name="suspect_status">
+        <div class="filter-field">
+            <label>Search (Name or NID)</label>
+            <input type="text" name="suspect_q" value="<?= h((string)$suspectFilters['query']) ?>" placeholder="Search name or NID">
+        </div>
+        <div class="filter-field">
+            <label>Status</label>
+            <select name="suspect_status">
             <option value="" <?= $suspectFilters['status'] === '' ? 'selected' : '' ?>>All statuses</option>
             <option value="PERSON_OF_INTEREST" <?= $suspectFilters['status'] === 'PERSON_OF_INTEREST' ? 'selected' : '' ?>>PERSON_OF_INTEREST</option>
             <option value="WANTED" <?= $suspectFilters['status'] === 'WANTED' ? 'selected' : '' ?>>WANTED</option>
             <option value="ARRESTED" <?= $suspectFilters['status'] === 'ARRESTED' ? 'selected' : '' ?>>ARRESTED</option>
             <option value="CLEARED" <?= $suspectFilters['status'] === 'CLEARED' ? 'selected' : '' ?>>CLEARED</option>
-        </select>
-        <button type="submit">Apply Filters</button>
-        <a class="btn-secondary" href="index.php?view=suspects">Reset</a>
+            </select>
+        </div>
+        <div class="filter-actions">
+            <button type="submit">Apply Filters</button>
+            <a class="btn-secondary" href="index.php?view=suspects">Reset</a>
+        </div>
     </form>
 </section>
 

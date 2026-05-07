@@ -216,9 +216,28 @@ button:hover {
 
 .filter-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 10px;
     align-items: end;
+}
+
+.filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 8px;
+    align-items: end;
+    flex-wrap: wrap;
+    grid-column: 1 / -1;
+}
+
+.filter-actions button,
+.filter-actions a {
+    flex: 0 0 auto;
 }
 
 .action-panel {

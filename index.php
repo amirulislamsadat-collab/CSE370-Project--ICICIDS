@@ -470,6 +470,9 @@ $canCreateEvidence = false;
 $canUpdateEvidence = false;
 $canDeleteEvidence = false;
 $canLinkEvidence = false;
+$canUnlinkEvidence = false;
+$canUnlinkSuspect = false;
+$canUnlinkCriminal = false;
 $canSubmitFeedback = false;
 $canSubmitSchema = false;
 $canReviewOfficers = false;
@@ -522,9 +525,12 @@ if ($isAuthed) {
     $canUpdateEvidence = $auth->can('UPDATE', 'evidence');
     $canDeleteEvidence = $auth->can('DELETE', 'evidence');
     $canLinkEvidence = $auth->can('CREATE', 'crime_report_evidence');
+    $canUnlinkEvidence = in_array($rank, [Auth::ROLE_GRADE_1, Auth::ROLE_GRADE_2], true);
+    $canUnlinkSuspect = in_array($rank, [Auth::ROLE_GRADE_1, Auth::ROLE_GRADE_2], true);
+    $canUnlinkCriminal = in_array($rank, [Auth::ROLE_GRADE_1, Auth::ROLE_GRADE_2], true);
     $canSubmitFeedback = $auth->can('CREATE', 'feedbacks');
     $canSubmitSchema = $auth->can('CREATE', 'schema_requests');
-    $canReviewOfficers = $auth->can('READ', 'officer_applications');
+    $canReviewOfficers = $rank === Auth::ROLE_GRADE_1;
 
     $viewAllowed = (
         ($view === 'dashboard')
@@ -549,7 +555,7 @@ if ($isAuthed) {
             $stats[$table] = (int)($stmt->fetch()['total'] ?? 0);
         }
 
-        $crimeReports = $crimeManager->listCrimeReports(null, null, 100);
+        $crimeReports = $crimeManager->listCrimeReports(null, null, 10);
     }
 
     if ($view === 'crimes' && $canReadCrimes) {

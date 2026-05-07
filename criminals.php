@@ -3,6 +3,7 @@
 $canCreateCriminal = $canCreateCriminal ?? false;
 $canLinkCriminal = $canLinkCriminal ?? false;
 $canDeleteCriminal = $canDeleteCriminal ?? false;
+$canUnlinkCriminal = $canUnlinkCriminal ?? false;
 $criminals = $criminals ?? [];
 $criminalDetail = $criminalDetail ?? null;
 $criminalCrimes = $criminalCrimes ?? [];
@@ -16,15 +17,13 @@ $criminalFilters = $criminalFilters ?? ['query' => '', 'status' => '', 'risk' =>
             <?php if ($canCreateCriminal): ?><button type="button" data-action-target="criminal-create">Confirm Criminal</button><?php endif; ?>
             <?php if ($canLinkCriminal): ?><button type="button" data-action-target="criminal-link">Link Criminal</button><?php endif; ?>
             <?php if ($canDeleteCriminal): ?><button type="button" data-action-target="criminal-delete">Delete Criminal</button><?php endif; ?>
-            <?php if ($canLinkCriminal): ?><button type="button" data-action-target="criminal-unlink-suspect">Unlink Suspect</button><?php endif; ?>
-            <?php if ($canLinkCriminal): ?><button type="button" data-action-target="criminal-unlink-case">Unlink Case</button><?php endif; ?>
+            <?php if ($canUnlinkCriminal): ?><button type="button" data-action-target="criminal-unlink-suspect">Unlink Suspect</button><?php endif; ?>
+            <?php if ($canUnlinkCriminal): ?><button type="button" data-action-target="criminal-unlink-case">Unlink Case</button><?php endif; ?>
         </div>
     </section>
-<?php endif; ?>
-
-<div class="action-forms" data-action-forms="criminal-actions">
+    <div class="action-forms" data-action-forms="criminal-actions">
     <?php if ($canCreateCriminal): ?>
-        <section class="card action-form" data-action-form="criminal-create">
+        <section class="card action-form" data-action-form="criminal-create" hidden>
             <h2>Confirm Criminal (Closed/Referred Case)</h2>
             <form method="post">
                 <input type="hidden" name="action" value="create_criminal">
@@ -66,7 +65,7 @@ $criminalFilters = $criminalFilters ?? ['query' => '', 'status' => '', 'risk' =>
     <?php endif; ?>
 
     <?php if ($canLinkCriminal): ?>
-        <section class="card action-form" data-action-form="criminal-link">
+        <section class="card action-form" data-action-form="criminal-link" hidden>
             <h2>Link Existing Criminal to Closed Case</h2>
             <form method="post">
                 <input type="hidden" name="action" value="link_criminal">
@@ -90,7 +89,7 @@ $criminalFilters = $criminalFilters ?? ['query' => '', 'status' => '', 'risk' =>
     <?php endif; ?>
 
     <?php if ($canDeleteCriminal): ?>
-        <section class="card action-form" data-action-form="criminal-delete">
+        <section class="card action-form" data-action-form="criminal-delete" hidden>
             <h2>Delete Criminal</h2>
             <form method="post">
                 <input type="hidden" name="action" value="delete_criminal">
@@ -101,8 +100,8 @@ $criminalFilters = $criminalFilters ?? ['query' => '', 'status' => '', 'risk' =>
         </section>
     <?php endif; ?>
 
-    <?php if ($canLinkCriminal): ?>
-        <section class="card action-form" data-action-form="criminal-unlink-suspect">
+    <?php if ($canUnlinkCriminal): ?>
+        <section class="card action-form" data-action-form="criminal-unlink-suspect" hidden>
             <h2>Unlink Criminal From Suspect</h2>
             <form method="post">
                 <input type="hidden" name="action" value="unlink_criminal_suspect">
@@ -112,7 +111,7 @@ $criminalFilters = $criminalFilters ?? ['query' => '', 'status' => '', 'risk' =>
             </form>
         </section>
 
-        <section class="card action-form" data-action-form="criminal-unlink-case">
+        <section class="card action-form" data-action-form="criminal-unlink-case" hidden>
             <h2>Unlink Criminal From Case</h2>
             <form method="post">
                 <input type="hidden" name="action" value="unlink_criminal_case">
@@ -124,7 +123,8 @@ $criminalFilters = $criminalFilters ?? ['query' => '', 'status' => '', 'risk' =>
             </form>
         </section>
     <?php endif; ?>
-</div>
+    </div>
+<?php endif; ?>
 
 <?php if ($criminalDetail): ?>
     <section class="card">
@@ -209,26 +209,34 @@ $criminalFilters = $criminalFilters ?? ['query' => '', 'status' => '', 'risk' =>
     <h2>Filter Criminals</h2>
     <form method="get" class="filter-grid">
         <input type="hidden" name="view" value="criminals">
-        <label>Search (Code or Name)</label>
-        <input type="text" name="criminal_q" value="<?= h((string)$criminalFilters['query']) ?>" placeholder="Search code or name">
-        <label>Status</label>
-        <select name="criminal_status">
+        <div class="filter-field">
+            <label>Search (Code or Name)</label>
+            <input type="text" name="criminal_q" value="<?= h((string)$criminalFilters['query']) ?>" placeholder="Search code or name">
+        </div>
+        <div class="filter-field">
+            <label>Status</label>
+            <select name="criminal_status">
             <option value="" <?= $criminalFilters['status'] === '' ? 'selected' : '' ?>>All statuses</option>
             <option value="INCARCERATED" <?= $criminalFilters['status'] === 'INCARCERATED' ? 'selected' : '' ?>>INCARCERATED</option>
             <option value="AT_LARGE" <?= $criminalFilters['status'] === 'AT_LARGE' ? 'selected' : '' ?>>AT_LARGE</option>
             <option value="PAROLE" <?= $criminalFilters['status'] === 'PAROLE' ? 'selected' : '' ?>>PAROLE</option>
             <option value="DECEASED" <?= $criminalFilters['status'] === 'DECEASED' ? 'selected' : '' ?>>DECEASED</option>
-        </select>
-        <label>Risk Level</label>
-        <select name="criminal_risk">
+            </select>
+        </div>
+        <div class="filter-field">
+            <label>Risk Level</label>
+            <select name="criminal_risk">
             <option value="" <?= $criminalFilters['risk'] === '' ? 'selected' : '' ?>>All risk levels</option>
             <option value="LOW" <?= $criminalFilters['risk'] === 'LOW' ? 'selected' : '' ?>>LOW</option>
             <option value="MEDIUM" <?= $criminalFilters['risk'] === 'MEDIUM' ? 'selected' : '' ?>>MEDIUM</option>
             <option value="HIGH" <?= $criminalFilters['risk'] === 'HIGH' ? 'selected' : '' ?>>HIGH</option>
             <option value="CRITICAL" <?= $criminalFilters['risk'] === 'CRITICAL' ? 'selected' : '' ?>>CRITICAL</option>
-        </select>
-        <button type="submit">Apply Filters</button>
-        <a class="btn-secondary" href="index.php?view=criminals">Reset</a>
+            </select>
+        </div>
+        <div class="filter-actions">
+            <button type="submit">Apply Filters</button>
+            <a class="btn-secondary" href="index.php?view=criminals">Reset</a>
+        </div>
     </form>
 </section>
 

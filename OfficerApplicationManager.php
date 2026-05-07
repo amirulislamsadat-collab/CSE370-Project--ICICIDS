@@ -128,7 +128,10 @@ final class OfficerApplicationManager
 
     public function listApplications(?string $status = null): array
     {
-        $this->auth->enforce('READ', 'officer_applications');
+        $reviewer = $this->auth->currentOfficer();
+        if ($reviewer === null || ($reviewer['rank'] ?? null) !== Auth::ROLE_GRADE_1) {
+            throw new RuntimeException('Permission denied. Officer applications are restricted to Grade 1 officer.');
+        }
 
         $sql = 'SELECT * FROM officer_applications';
         $params = [];
@@ -147,9 +150,13 @@ final class OfficerApplicationManager
 
     public function approveApplication(int $applicationId, string $finalRank, ?string $note): void
     {
+        $reviewer = $this->auth->currentOfficer();
+        if ($reviewer === null || ($reviewer['rank'] ?? null) !== Auth::ROLE_GRADE_1) {
+            throw new RuntimeException('Permission denied. Only Grade 1 officer can approve applications.');
+        }
+
         $this->auth->enforce('CREATE', 'officers');
 
-        $reviewer = $this->auth->currentOfficer();
         if ($reviewer === null) {
             throw new RuntimeException('No authenticated officer.');
         }
@@ -227,9 +234,13 @@ final class OfficerApplicationManager
 
     public function rejectApplication(int $applicationId, ?string $note): void
     {
+        $reviewer = $this->auth->currentOfficer();
+        if ($reviewer === null || ($reviewer['rank'] ?? null) !== Auth::ROLE_GRADE_1) {
+            throw new RuntimeException('Permission denied. Only Grade 1 officer can reject applications.');
+        }
+
         $this->auth->enforce('CREATE', 'officers');
 
-        $reviewer = $this->auth->currentOfficer();
         if ($reviewer === null) {
             throw new RuntimeException('No authenticated officer.');
         }
